@@ -1,0 +1,46 @@
+﻿@model AppGestionStock.Models.Proveedor
+
+@{
+    ViewData["Title"] = "Editar Proveedor";
+}
+
+<div class="container">
+    <h2>Editar Proveedor</h2>
+
+    <form asp-action="ProveedorEdit" method="post">
+        <div class="form-group">
+            <label asp-for="NombreEmpresa"></label>
+            <input asp-for="NombreEmpresa" class="form-control" />
+            <span asp-validation-for="NombreEmpresa" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Telefono"></label>
+            <input asp-for="Telefono" class="form-control" />
+            <span asp-validation-for="Telefono" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="NombreContacto"></label>
+            <input asp-for="NombreContacto" class="form-control" />
+            <span asp-validation-for="NombreContacto" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Direccion"></label>
+            <input asp-for="Direccion" class="form-control" />
+            <span asp-validation-for="Direccion" class="text-danger"></span>
+        </div>
+
+        <input type="hidden" asp-for="IdProveedor" />
+
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

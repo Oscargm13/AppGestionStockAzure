@@ -1,0 +1,273 @@
+﻿@model Venta
+
+@{
+    ViewData["Title"] = "Realizar Venta";
+}
+
+@{
+    List<VistaProductoTienda> productos = (List<VistaProductoTienda>)ViewData["PRODUCTOS"];
+}
+<style>
+    .custom-label {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .custom-input, .custom-select {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    .custom-btn {
+        background-color: #007bff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+        color: white;
+    }
+
+        .custom-btn:hover {
+            background-color: #0056b3;
+        }
+
+    .custom-title {
+        color: #007bff;
+        font-weight: 600;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+
+    .custom-select {
+        padding: 8px 12px;
+        font-size: 16px;
+        height: auto;
+    }
+
+    .btn-container {
+        display: flex; /* Usamos flexbox */
+        justify-content: center; /* Centramos los botones horizontalmente */
+        align-items: center; /* Alineamos los botones verticalmente */
+        gap: 10px; /* Separación entre los botones (opcional) */
+    }
+
+    /* Aplicamos estilos a los botones dentro del contenedor */
+    .btn-secondary,
+    .btn-primary {
+        background-color: #6c757d; /* Color gris para "Agregar Nuevo Producto" */
+        border-color: #6c757d;
+        color: white; /* Asegurar que el texto sea blanco */
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d; /* Color gris para "Agregar Nuevo Producto" */
+        border-color: #6c757d;
+    }
+
+        .btn-secondary:hover {
+            background-color: #545b62; /* Ligeramente más oscuro al pasar el ratón */
+            border-color: #545b62;
+        }
+
+    /* Mantener el estilo del botón primary (Registrar Venta) */
+    .btn-primary {
+        background-color: #007bff; /* Color azul para "Registrar Venta" */
+        border-color: #007bff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+    .custom-title {
+        color: #007bff;
+        font-weight: 600;
+    }
+
+    .card {
+        border-radius: 10px;
+    }
+</style>
+
+<h1 class="text-center mb-4">Registrar Venta</h1>
+
+@if (ViewBag.MensajeExito != null)
+{
+    <div class="alert alert-success text-center">
+        @ViewBag.MensajeExito
+        <br />
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Volver al Home</a>
+    </div>
+}
+else
+{
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow rounded p-4" style="border: 1px solid #ddd;">
+                    <div class="card-body">
+                        <form asp-action="Venta" method="post" id="ventaForm">
+                            <div id="paso1">
+                                <div class="form-group mb-3">
+                                    <label asp-for="FechaVenta" class="form-label custom-label">Fecha de Venta:</label>
+                                    <input asp-for="FechaVenta" class="form-control custom-input" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="IdTienda" class="form-label custom-label">ID de Tienda:</label>
+                                    <select asp-for="IdTienda" class="form-control custom-select">
+                                        <option value="">Seleccione una tienda</option>
+                                        @foreach (var tienda in (List<Tienda>)ViewData["TIENDAS"])
+                                        {
+                                            <option value="@tienda.IdTienda">@tienda.Nombre</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="IdCliente" class="form-label custom-label">ID de Cliente:</label>
+                                    <input asp-for="IdCliente" class="form-control custom-input" />
+                                </div>
+                                <button type="submit" name="siguientePaso" value="true" class="btn btn-primary custom-btn">Siguiente</button>
+                            </div>
+
+                            <div id="paso2" style="display: none;">
+                                <h2 class="mb-4 custom-title">Detalles de Venta</h2>
+                                <div id="detallesVenta">
+                                    <div class="detalleVenta mb-4 p-3 border rounded" id="detalleActual" style="background-color: #f8f9fa;">
+                                        <div class="form-group mb-3">
+                                            <label class="form-label custom-label">ID de Producto:</label>
+                                            <select id="idProducto" class="form-control custom-select">
+                                                <option value="">Seleccione un producto</option>
+                                                @if (productos != null)
+                                                {
+                                                    @foreach (var producto in productos)
+                                                    {
+                                                        <option value="@producto.IdProducto" data-precio="@producto.Precio.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-stock="@producto.StockTienda">@producto.Nombre</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <span id="stockDisponible" style="margin-left: 10px; margin-top: 2px; color: darkorange;"></span>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="form-label custom-label">Cantidad:</label>
+                                            <input type="number" id="cantidad" class="form-control custom-input" />
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="form-label custom-label">Precio Unitario:</label>
+                                            <input type="number" step="0.01" id="precioUnidad" class="form-control custom-input" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" id="agregarProducto" class="btn btn-secondary custom-btn mb-4">Agregar Nuevo Producto</button>
+                                <button type="submit" class="btn btn-primary custom-btn" id="registrarVenta">Registrar Venta</button>
+                                <input type="hidden" asp-for="IdTienda" />
+                                <input type="hidden" asp-for="FechaVenta" />
+                                <input type="hidden" asp-for="IdCliente" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+        let detalles = []; // Lista para almacenar los detalles de venta
+
+    document.getElementById('idProducto').addEventListener('change', function() {
+        let precio = parseFloat(this.options[this.selectedIndex].getAttribute('data-precio'));
+        let stock = parseInt(this.options[this.selectedIndex].getAttribute('data-stock'));
+        if (!isNaN(precio)) {
+            document.getElementById('precioUnidad').value = precio.toFixed(2);
+        } else {
+            document.getElementById('precioUnidad').value = '';
+        }
+        if (!isNaN(stock)) {
+            document.getElementById('stockDisponible').textContent = `Stock: ${stock}`;
+            document.getElementById('cantidad').max = stock;
+        } else {
+            document.getElementById('stockDisponible').textContent = '';
+            document.getElementById('cantidad').max = '';
+        }
+    });
+
+    document.getElementById('cantidad').addEventListener('input', function() {
+        let stock = parseInt(document.getElementById('idProducto').options[document.getElementById('idProducto').selectedIndex].getAttribute('data-stock'));
+        if (this.value > stock) {
+            this.value = stock;
+        }
+    });
+
+    document.getElementById('agregarProducto').addEventListener('click', function() {
+        // Obtener los valores del detalle actual
+        let idProducto = document.getElementById('idProducto').value;
+        let cantidad = document.getElementById('cantidad').value;
+        let precioUnidad = document.getElementById('precioUnidad').value;
+
+        // Agregar el detalle a la lista
+        detalles.push({
+            IdProducto: idProducto,
+            Cantidad: cantidad,
+            PrecioUnidad: precioUnidad
+        });
+
+        // Limpiar el detalle actual
+        document.getElementById('idProducto').value = '';
+        document.getElementById('cantidad').value = '';
+        document.getElementById('precioUnidad').value = '';
+
+        // Limpiar el stock disponible
+        document.getElementById('stockDisponible').textContent = '';
+    });
+
+    document.getElementById('registrarVenta').addEventListener('click', function() {
+        // Obtener los valores del detalle actual
+        let idProducto = document.getElementById('idProducto').value;
+        let cantidad = document.getElementById('cantidad').value;
+        let precioUnidad = document.getElementById('precioUnidad').value;
+
+        // Agregar el detalle a la lista
+        detalles.push({
+            IdProducto: idProducto,
+            Cantidad: cantidad,
+            PrecioUnidad: precioUnidad
+        });
+    });
+
+    document.getElementById('ventaForm').addEventListener('submit', function(event) {
+        // Agregar los detalles almacenados al formulario antes de enviarlo
+        detalles.forEach((detalle, index) => {
+            let idProductoInput = document.createElement('input');
+            idProductoInput.type = 'hidden';
+            idProductoInput.name = `idProducto[${index}]`;
+            idProductoInput.value = detalle.IdProducto;
+            this.appendChild(idProductoInput);
+
+            let cantidadInput = document.createElement('input');
+            cantidadInput.type = 'hidden';
+            cantidadInput.name = `cantidad[${index}]`;
+            cantidadInput.value = detalle.Cantidad;
+            this.appendChild(cantidadInput);
+
+            let precioUnidadInput = document.createElement('input');
+            precioUnidadInput.type = 'hidden';
+            precioUnidadInput.name = `precioUnidad[${index}]`;
+            precioUnidadInput.value = detalle.PrecioUnidad;
+            this.appendChild(precioUnidadInput);
+        });
+    });
+
+    if (document.getElementById('idProducto').options.length > 1) {
+        document.getElementById('paso1').style.display = 'none';
+        document.getElementById('paso2').style.display = 'block';
+    }
+</script>

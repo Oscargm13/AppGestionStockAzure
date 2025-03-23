@@ -1,0 +1,30 @@
+﻿@model IEnumerable<AppGestionStock.Models.Producto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1 class="text-center">Lista de Productos</h1>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="~/images/Productos/@item.Imagen" class="card-img-top" alt="@item.Nombre" style="max-height: 200px; object-fit: contain;">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Nombre</h5>
+                    <p class="card-text">
+                        <strong>Precio:</strong> @item.Precio<br />
+                        <strong>Coste:</strong> @item.Coste<br />
+                        <strong>Categoría:</strong> @item.IdCategoria
+                    </p>
+                    <div class="d-flex justify-content-between">
+						<a asp-action="UpdateProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-sm btn-primary"><i data-lucide="pencil"></i></a>
+                        <a asp-action="EliminarProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-sm btn-danger"><i data-lucide="trash-2"></i></a>
+                    </div>
+                </div>-
+            </div>
+        </div>
+    }
+</div>

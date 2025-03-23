@@ -1,0 +1,139 @@
+﻿* {
+    box-sizing: border-box;
+}
+
+.card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    padding: .75rem 1.25rem;
+    margin-bottom: 0;
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.legend-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+hr {
+    border: 1px solid #e0e0e0;
+    margin: 15px 0;
+}
+
+.earnings-card {
+    border: 1px solid #e0e0e0;
+    border-left: 7px solid #556B2F;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #FFFFFF;
+    height: 80px;
+}
+
+.earnings-content {
+    flex-grow: 1;
+    text-align: center;
+}
+
+.earnings-title {
+    font-size: 1.1em;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.earnings-amount {
+    font-size: 2em;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.earnings-icon {
+    font-size: 3em;
+    color: #ccc;
+}
+
+.card-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 25px;
+}
+
+    .card-row .earnings-card {
+        width: 280px;
+    }
+
+.chart-card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.chart-container {
+    width: 100%;
+    flex-grow: 1; /* Permitir que el contenedor del gráfico crezca y ocupe el espacio restante */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.chart-legends {
+    display: flex;
+}
+
+@media (max-width: 1290px) {
+    .container .row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .container .col-md-4 {
+        flex: 1 1 calc(50% - 20px);
+        margin-bottom: 10px;
+    }
+}

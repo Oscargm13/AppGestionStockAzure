@@ -1,0 +1,121 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@model ProductosTienda
+<link rel="stylesheet" href="~/css/estilosHome.css" asp-append-version="true" />
+
+<div class="container">
+    <div class="card-row">
+        <div class="earnings-card" style="border-left: 7px solid #D3D3D3;">
+            <div class="earnings-content">
+                <div class="earnings-title">Clientes actuales</div>
+                <div class="earnings-amount">@ViewData["NUMEROCLIENTES"]</div>
+            </div>
+            <div class="earnings-icon">
+                <i data-lucide="user-plus"></i>
+            </div>
+        </div>
+        <div class="earnings-card" style="border-left: 7px solid #A0522D;">
+            <div class="earnings-content">
+                <div class="earnings-title">Stock total</div>
+                <div class="earnings-amount">@ViewData["STOCKTOTAL"]</div>
+            </div>
+            <div class="earnings-icon">
+                <i data-lucide="package"></i>
+            </div>
+        </div>
+        <div class="earnings-card" style="border-left: 7px solid #556B2F;">
+            <div class="earnings-content">
+                <div class="earnings-title">EARNINGS (MONTHLY)</div>
+                <div class="earnings-amount">$@ViewData["INGRESOSMENSUALES"]</div>
+            </div>
+            <div class="earnings-icon">
+                <i data-lucide="dollar-sign"></i>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <div class="card chart-card" style="height: 60vh;">
+                <div class="card-header">
+                    <div class="chart-text">
+                        <h5>Ventas vs. Compras</h5>
+                        <p>Historial de ventas y compras de los ultimos meses</p>
+                    </div>
+                    <div class="chart-legends">
+                        <span class="legend-item" style="background-color: rgba(75, 192, 192, 0.5); padding: 5px; margin-right: 10px;">Ventas Mensuales</span>
+                        <span class="legend-item" style="background-color: rgba(255, 99, 132, 0.5); padding: 5px;">Compras Mensuales</span>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 80%; width: 98%;">
+                    <canvas id="ventasComprasChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('ventasComprasChart').getContext('2d');
+
+        // Obtener datos de ViewData
+        const meses = @Html.Raw(Json.Serialize(ViewData["MESES"]));
+        const montosVentas = @Html.Raw(Json.Serialize(ViewData["MONTOS_VENTAS"]));
+        const montosCompras = @Html.Raw(Json.Serialize(ViewData["MONTOS_COMPRAS"]));
+
+        console.log("Meses:", meses);
+        console.log("Ventas:", montosVentas);
+        console.log("Compras:", montosCompras);
+
+        // Construir etiquetas de los meses en español
+        const labels = meses.map(mes => {
+            const date = new Date(2000, mes - 1, 1);
+            return date.toLocaleString('es-ES', { month: 'long' });
+        });
+
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Ventas Mensuales',
+                        data: montosVentas,
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Compras Mensuales',
+                        data: montosCompras,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: {
+                            autoSkip: true,
+                            maxRotation: 45,
+                            minRotation: 0
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>

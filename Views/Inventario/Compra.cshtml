@@ -1,0 +1,182 @@
+﻿@model Compra
+
+@{
+    ViewData["Title"] = "Realizar Compra";
+}
+
+@{
+    List<Proveedor> proveedores = (List<Proveedor>)ViewData["PROVEEDORES"];
+    List<Tienda> tiendas = (List<Tienda>)ViewData["TIENDAS"];
+}
+
+<h1 class="text-center mb-3">Registrar Compra</h1>
+
+@if (ViewBag.MensajeExito != null)
+{
+    <div class="alert alert-success text-center">
+        @ViewBag.MensajeExito
+        <br />
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Volver al Home</a>
+    </div>
+}
+else
+{
+    <div class="container mt-3">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <form asp-action="Compra" method="post" id="compraForm">
+                            <div id="paso1">
+                                <div class="form-group mb-3">
+                                    <label asp-for="FechaCompra" class="form-label">Fecha de Compra:</label>
+                                    <input asp-for="FechaCompra" class="form-control" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="IdProveedor" class="form-label">ID de Proveedor:</label>
+                                    <select asp-for="IdProveedor" class="form-control" id="proveedorSelect">
+                                        <option value="">Seleccione un proveedor</option>
+                                        @foreach (var proveedor in proveedores)
+                                        {
+                                            <option value="@proveedor.IdProveedor">@proveedor.NombreEmpresa</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label asp-for="IdTienda" class="form-label">ID de Tienda:</label>
+                                    <select asp-for="IdTienda" class="form-control">
+                                        <option value="">Seleccione una tienda</option>
+                                        @foreach (var tienda in tiendas)
+                                        {
+                                            <option value="@tienda.IdTienda">@tienda.Nombre</option>
+                                        }
+                                    </select>
+                                </div>
+                                <button type="button" id="siguientePaso" class="btn btn-primary">Siguiente</button>
+                            </div>
+
+                            <div id="paso2" style="display: none;">
+                                <h2 class="mb-3">Detalles de Compra</h2>
+                                <div id="detallesCompra">
+                                    <div class="detalleCompra mb-4 p-3 border rounded" id="detalleActual">
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">ID de Producto:</label>
+                                            <select id="idProducto" class="form-control">
+                                                <option value="">Seleccione un producto</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">Coste:</label>
+                                            <input type="text" id="costoProducto" class="form-control" readonly />
+                                        </div>
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">Cantidad:</label>
+                                            <input type="number" id="cantidad" class="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button type="button" id="agregarProducto" class="btn btn-secondary mb-4">Agregar Nuevo Producto</button>
+                                <button type="submit" class="btn btn-primary" id="registrarCompra">Registrar Compra</button>
+
+                                <input type="hidden" asp-for="IdTienda" />
+                                <input type="hidden" asp-for="FechaCompra" />
+                                <input type="hidden" asp-for="IdProveedor" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<script>
+    let detalles = [];
+
+    document.getElementById('proveedorSelect').addEventListener('change', function() {
+        let proveedorId = this.value;
+        if (proveedorId) {
+            fetch(`/Inventario/GetProductosProveedor?proveedorId=${proveedorId}`)
+                .then(response => response.json())
+                .then(productos => {
+                    let selectProducto = document.getElementById('idProducto');
+                    selectProducto.innerHTML = '<option value="">Seleccione un producto</option>';
+                    productos.forEach(producto => {
+                        let option = document.createElement('option');
+                        option.value = producto.idProducto;
+                        option.textContent = producto.nombre;
+                        selectProducto.appendChild(option);
+                    });
+                });
+        }
+    });
+
+    document.getElementById('idProducto').addEventListener('change', function() {
+        let productoId = this.value;
+        if (productoId) {
+            fetch(`/Inventario/GetCostoProducto?productoId=${productoId}`)
+                .then(response => response.json())
+                .then(costo => {
+                    document.getElementById('costoProducto').value = costo;
+                });
+        } else {
+            document.getElementById('costoProducto').value = '';
+        }
+    });
+
+    document.getElementById('agregarProducto').addEventListener('click', function() {
+        let idProducto = document.getElementById('idProducto').value;
+        let cantidad = document.getElementById('cantidad').value;
+        let precioUnidad = document.getElementById('costoProducto').value;
+
+        detalles.push({
+            IdProducto: idProducto,
+            Cantidad: cantidad,
+            PrecioUnidad: precioUnidad
+        });
+
+        document.getElementById('idProducto').value = '';
+        document.getElementById('cantidad').value = '';
+        document.getElementById('costoProducto').value = '';
+    });
+
+    document.getElementById('registrarCompra').addEventListener('click', function() {
+        let idProducto = document.getElementById('idProducto').value;
+        let cantidad = document.getElementById('cantidad').value;
+        let precioUnidad = document.getElementById('costoProducto').value;
+
+        detalles.push({
+            IdProducto: idProducto,
+            Cantidad: cantidad,
+            PrecioUnidad: precioUnidad
+        });
+    });
+
+    document.getElementById('compraForm').addEventListener('submit', function(event) {
+        detalles.forEach((detalle, index) => {
+            let idProductoInput = document.createElement('input');
+            idProductoInput.type = 'hidden';
+            idProductoInput.name = `idProducto[${index}]`;
+            idProductoInput.value = detalle.IdProducto;
+            this.appendChild(idProductoInput);
+
+            let cantidadInput = document.createElement('input');
+            cantidadInput.type = 'hidden';
+            cantidadInput.name = `cantidad[${index}]`;
+            cantidadInput.value = detalle.Cantidad;
+            this.appendChild(cantidadInput);
+
+            let precioUnidadInput = document.createElement('input');
+            precioUnidadInput.type = 'hidden';
+            precioUnidadInput.name = `precioUnidad[${index}]`;
+            precioUnidadInput.value = detalle.PrecioUnidad;
+            this.appendChild(precioUnidadInput);
+        });
+    });
+
+    document.getElementById('siguientePaso').addEventListener('click', function() {
+        document.getElementById('paso1').style.display = 'none';
+        document.getElementById('paso2').style.display = 'block';
+    });
+</script>

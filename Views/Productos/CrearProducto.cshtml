@@ -1,0 +1,74 @@
+﻿@model AppGestionStock.Models.Producto
+
+@{
+    List<Categoria> categorias = (List<Categoria>)ViewData["CATEGORIAS"];
+}
+
+@{
+    ViewData["Title"] = "CrearProducto";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1 class="text-center">Crear Producto</h1>
+            <hr />
+            <form asp-action="CrearProducto">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label asp-for="Nombre" class="control-label"></label>
+                    <input asp-for="Nombre" class="form-control" />
+                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Precio" class="control-label"></label>
+                    <input asp-for="Precio" class="form-control" />
+                    <span asp-validation-for="Precio" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Coste" class="control-label"></label>
+                    <input asp-for="Coste" class="form-control" />
+                    <span asp-validation-for="Coste" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">Nombre de la Categoría</label>
+                    <input name="nombreCategoria" class="form-control" />
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">Categoría Padre</label>
+                    <select name="idCategoriaPadre" class="form-control">
+                        <option value="">Seleccionar Categoría Padre</option>
+                        @foreach (var categoria in categorias)
+                        {
+                            <option value="@categoria.IdCategoria">@categoria.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Imagen" class="control-label"></label>
+                    <input asp-for="Imagen" class="form-control" />
+                    <span asp-validation-for="Imagen" class="text-danger"></span>
+                </div>
+
+                <div class="form-group text-center">
+                    <input type="submit" value="Crear" class="btn btn-primary" />
+                </div>
+            </form>
+            <div class="text-center mt-3">
+                <a asp-action="Index">Volver a la Lista</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

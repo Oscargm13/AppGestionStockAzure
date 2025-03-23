@@ -1,0 +1,242 @@
+﻿@{
+    Usuario? usuario = Context.Session.GetObject<Usuario>("USUARIO");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - AppGestionStock</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/estilosLayout.css" asp-append-version="true" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    @if (usuario != null)
+    {
+        <nav class="navbar navbar-light bg-light px-3 fixed-top w-100">
+            <h4>SynchroStock</h4>
+            <span class="h5 mx-auto">@usuario.nombreEmpresa</span>
+
+            <a href="#" id="notificaciones-btn" class="nav-link">
+                @if (ViewData["NOTIFICACIONES"] != null && ((List<Notificacion>)ViewData["NOTIFICACIONES"]).Count > 0)
+                {
+                    <i data-lucide="bell-dot" style="color: orange"></i>
+                    <span class="badge badge-danger">@(((List<Notificacion>)ViewData["NOTIFICACIONES"]).Count)</span>
+                }
+                else
+                {
+                    <i data-lucide="bell"></i>
+                    @if (ViewData["NOTIFICACIONES"] != null && ((List<Notificacion>)ViewData["NOTIFICACIONES"]).Count > 0)
+                    {
+                        <span class="badge badge-danger">@(((List<Notificacion>)ViewData["NOTIFICACIONES"]).Count)</span>
+                    }
+                }
+            </a>
+            <div class="user-info">
+                <img src="~/images/usuarios/@usuario.Imagen" alt="Usuario" />
+                <span>@usuario.Nombre</span>
+                <a asp-controller="Usuarios" asp-action="LogOut" style="margin-left: 10px;">
+                    <i data-lucide="log-out" style="color: red;"></i>
+                </a>
+            </div>
+        </nav>
+
+        <div id="notificaciones-dropdown" class="dropdown-menu dropdown-menu-right" style="position: absolute; right: 20px; top: 60px; display: none; z-index: 9999;">
+            @if (ViewData["NOTIFICACIONES"] != null)
+            {
+                List<Notificacion> notificaciones = (List<Notificacion>)ViewData["NOTIFICACIONES"];
+                if (notificaciones.Any())
+                {
+                    foreach (var notificacion in notificaciones)
+                    {
+                        <a class="dropdown-item notificacion-item" href="#">
+                            @notificacion.Mensaje - @notificacion.Fecha
+                        </a>
+                    }
+                }
+                else
+                {
+                    <a class="dropdown-item">No hay notificaciones.</a>
+                }
+            }
+            else
+            {
+                <a class="dropdown-item">No hay notificaciones.</a>
+            }
+        </div>
+    }
+    <div class="d-flex">
+        @if (usuario != null)
+        {
+            <nav class="sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a asp-controller="Home" asp-action="Index"><i data-lucide="home"></i> <span>Dashboard</span></a></li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" data-bs-toggle="collapse" href="#productosMenu" role="button">
+                            <i data-lucide="package"></i> Productos
+                        </a>
+                        <div class="collapse" id="productosMenu">
+                            <a class="nav-link text-white" asp-controller="Productos" asp-action="ProductosTienda">
+                                <i data-lucide="store"></i> Productos
+                            </a>
+                            <a class="nav-link text-white" asp-controller="Productos" asp-action="CrearProducto">
+                                <i data-lucide="plus-circle"></i> Agregar producto
+                            </a>
+                        </div>
+                    </li>
+                    <li class="nav-item"><a asp-controller="Clientes" asp-action="Clientes"><i data-lucide="users"></i>Clientes</a></li>
+                    <li class="nav-item"><a asp-controller="Proveedores" asp-action="Index"><i data-lucide="users"></i>Proveedores</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" data-bs-toggle="collapse" href="#inventarioMenu" role="button">
+                            <i data-lucide="clipboard"></i> Inventario
+                        </a>
+                        <div class="collapse" id="inventarioMenu">
+                            <a class="nav-link text-white" asp-controller="Inventario" asp-action="Venta">
+                                <i data-lucide="file-symlink"></i> Registrar venta
+                            </a>
+                            <a class="nav-link text-white" asp-controller="Inventario" asp-action="Compra">
+                                <i data-lucide="file-symlink"></i> Registrar compra
+                            </a>
+
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link collapsed" data-bs-toggle="collapse" href="#reportesMenu" role="button">
+                            <i data-lucide="bar-chart"></i> Reportes
+                        </a>
+                        <div class="collapse" id="reportesMenu">
+                            <a class="nav-link text-white" asp-controller="Reportes" asp-action="Index">
+                                <i data-lucide="file-symlink"></i> Informacion de inventario
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        }
+        <main class="main-content @(usuario == null ? "fullscreen" : "") w-100">
+            @RenderBody()
+        </main>
+
+        @if (usuario != null)
+        {
+            <aside class="right-panel">
+                <h6 class="text-center">Movimientos Recientes</h6>
+                @if (Context.Session.GetObject<List<VistaInventarioDetalladoVenta>>("INVENTARIO") is List<VistaInventarioDetalladoVenta> inventarioList)
+                {
+                    inventarioList.Reverse();
+                    @foreach (var movimiento in inventarioList)
+                    {
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <p class="card-text">
+                                    @if (movimiento.TipoMovimiento == "Salida")
+                                    {
+                                        <span>Salida: @movimiento.Cantidad unidades de Producto @movimiento.NombreProducto.</span>
+                                    }
+                                    else if (movimiento.TipoMovimiento == "Entrada")
+                                    {
+                                        <span>Entrada: @movimiento.Cantidad unidades de Producto @movimiento.NombreProducto.</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Stock actualizado: Producto @movimiento.IdProducto.</span>
+                                    }
+                                </p>
+
+                                <div class="movimiento-detalles d-none">
+                                    <p><strong>Fecha:</strong> @movimiento.FechaMovimiento</p>
+                                    <p><strong>Responsable:</strong> @movimiento.TipoMovimiento</p>
+                                    <p><strong>Descripción:</strong> @movimiento.Cantidad</p>
+
+                                    @if (movimiento.IdCliente.HasValue && !string.IsNullOrEmpty(movimiento.NombreCliente))
+                                    {
+                                        <p><strong>Cliente:</strong> @movimiento.NombreCliente</p>
+                                    }
+                                    else
+                                    {
+                                        <p><strong>Cliente:</strong> No especificado</p>
+                                    }
+
+                                    <p><strong>Tienda:</strong> @(movimiento.NombreTienda ?? "No especificado")</p>
+                                </div>
+                            </div>
+
+                            <button class="toggle-details-button" style="border: none; background: none; padding: 0; cursor: pointer;">
+                                <i class="toggle-details" data-lucide="chevron-down"></i>
+                            </button>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>No hay movimientos recientes.</p>
+                }
+            </aside>
+        }
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".toggle-details-button").forEach(button => {
+                button.addEventListener("click", function () {
+                    let card = this.closest(".card");
+                    let detalles = card.querySelector(".movimiento-detalles");
+                    let icon = this.querySelector(".toggle-details");
+                    let isOpen = !detalles.classList.contains("d-none");
+
+                    // Cerrar todas las demás tarjetas
+                    document.querySelectorAll(".movimiento-detalles").forEach(otherDetalles => {
+                        if (otherDetalles !== detalles) {
+                            otherDetalles.classList.add("d-none");
+                            otherDetalles.closest(".card").querySelector(".toggle-details").setAttribute("data-lucide", "chevron-down");
+                        }
+                    });
+
+                    // Alternar la tarjeta actual
+                    if (isOpen) {
+                        detalles.classList.add("d-none");
+                        icon.setAttribute("data-lucide", "chevron-down");
+                    } else {
+                        detalles.classList.remove("d-none");
+                        icon.setAttribute("data-lucide", "chevron-up");
+                    }
+
+                    lucide.createIcons();
+                });
+            });
+        });
+
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const notificacionesBtn = document.getElementById('notificaciones-btn');
+            const notificacionesDropdown = document.getElementById('notificaciones-dropdown');
+
+            notificacionesBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                notificacionesDropdown.style.display = notificacionesDropdown.style.display === 'none' ? 'block' : 'none';
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!notificacionesBtn.contains(event.target) && !notificacionesDropdown.contains(event.target)) {
+                    notificacionesDropdown.style.display = 'none';
+                }
+            });
+        });
+
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

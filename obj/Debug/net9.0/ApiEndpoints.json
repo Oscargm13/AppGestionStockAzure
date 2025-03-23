@@ -1,0 +1,12 @@
+[
+  {
+    "ContainingType": "AppGestionStock.Controllers.GraficosController",
+    "Method": "ObtenerDatosCircular",
+    "RelativePath": "api/Graficos/datosCircular",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]
