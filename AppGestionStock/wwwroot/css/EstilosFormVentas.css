@@ -1,0 +1,166 @@
+﻿/* Estilos base */
+body {
+    background-color: #f8f9fa;
+}
+
+.custom-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.custom-input, .custom-select {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px 15px; /* Aumentado el padding horizontal */
+    font-size: 16px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    color: #333;
+    background-color: #fff;
+    height: auto; /* Permitir que la altura se ajuste automáticamente */
+    min-height: 48px; /* Establecer una altura mínima */
+    width: 100%; /* Asegurar que ocupe todo el ancho disponible */
+    text-overflow: ellipsis;
+}
+    .custom-select option {
+        color: #333; /* Color de texto más oscuro para las opciones también */
+        background-color: #fff;
+        padding: 8px;
+        font-size: 16px;
+    }
+
+        /* Para el placeholder del select */
+        .custom-select option[value=""] {
+            color: #555; /* Color ligeramente más oscuro para el placeholder */
+        }
+
+    .custom-input:focus, .custom-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        outline: none;
+    }
+
+/* Estilos para botones */
+.btn {
+    font-weight: 500;
+    transition: all 0.3s;
+    padding: 10px 25px;
+    border-radius: 6px;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background-color: #0066cc;
+    border: none;
+    color: white;
+}
+
+    .btn-primary:hover {
+        background-color: #0052a3;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+    color: white;
+}
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+/* Estilos para tarjetas */
+.card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+}
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+/* Estilos para el título principal */
+h1.main-title {
+    color: #0066cc;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+/* Estilos para los detalles de venta */
+.detalle-venta {
+    background-color: #f8f9fa;
+    border-left: 4px solid #0066cc;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* Contenedor de botones alineados */
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+}
+
+/* Información de stock */
+.stock-info {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background-color: #fff3e0;
+    color: #ff9800;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Divisor sutil */
+.subtle-divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #dee2e6, transparent);
+    margin: 20px 0;
+}
+
+/* Panel de éxito */
+.success-panel {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #e8f5e9;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin: 30px auto;
+    max-width: 600px;
+}
+
+    .success-panel .btn {
+        margin-top: 20px;
+    }
+
+/* Efecto de enfoque para el paso activo */
+.step-active {
+    animation: pulse 2s;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+    }
+}
