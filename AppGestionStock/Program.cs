@@ -10,11 +10,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
-builder.Services.AddTransient<RepositoryClientes>();
-builder.Services.AddTransient<RepositoyProductos>();
-builder.Services.AddTransient<RepositoryUsuario>();
-builder.Services.AddTransient<RepositoryInventario>();
-builder.Services.AddTransient<RepositryTiendas>();
+builder.Services.AddTransient<RepositoryAlmacen>();
 string connectionString = builder.Configuration.GetConnectionString("SqlAzure");
 //builder.Services.AddDbContext<AlmacenesContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDbContext<AlmacenesContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Scoped);

@@ -11,13 +11,11 @@ namespace AppGestionStock.Controllers
 {
     public class ReportesController : Controller
     {
-        private readonly RepositoryInventario repo;
-        private RepositoyProductos repoProductos;
+        private readonly RepositoryAlmacen repo;
 
-        public ReportesController(RepositoryInventario repo, RepositoyProductos repoProductos)
+        public ReportesController(RepositoryAlmacen repo)
         {
             this.repo = repo;
-            this.repoProductos = repoProductos;
         }
 
         public async Task<IActionResult> Index()
@@ -134,7 +132,7 @@ namespace AppGestionStock.Controllers
         }
         public IActionResult GenerarPdfStock(int idTienda)
         {
-            List<VistaProductoTienda> productos = this.repoProductos.GetVistaProductosTienda(idTienda);
+            List<VistaProductoTienda> productos = this.repo.GetVistaProductosTienda(idTienda);
 
             if (productos == null || productos.Count == 0)
             {

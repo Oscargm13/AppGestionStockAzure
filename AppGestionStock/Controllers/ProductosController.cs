@@ -7,12 +7,10 @@ namespace AppGestionStock.Controllers
 {
     public class ProductosController : Controller
     {
-        private RepositoyProductos repo;
-        private RepositryTiendas repoTiendas;
-        public ProductosController(RepositoyProductos repo, RepositryTiendas repoTiendas)
+        private RepositoryAlmacen repo;
+        public ProductosController(RepositoryAlmacen repo)
         {
             this.repo = repo;
-            this.repoTiendas = repoTiendas;
         }
 
         public IActionResult Index()
@@ -30,7 +28,7 @@ namespace AppGestionStock.Controllers
         public IActionResult ProductosTienda()
         {
             List<VistaProductoTienda> productos = this.repo.GetAllVistaProductosTienda();
-            List<Tienda> tiendas = this.repoTiendas.GetTiendas();
+            List<Tienda> tiendas = this.repo.GetTiendas();
 
             // Agregar la opción "Todas las Tiendas"
             tiendas.Insert(0, new Tienda { IdTienda = 0, Nombre = "Todas las Tiendas" });

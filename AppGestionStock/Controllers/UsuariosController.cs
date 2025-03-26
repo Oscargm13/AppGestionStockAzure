@@ -8,9 +8,9 @@ namespace AppGestionStock.Controllers
 {
     public class UsuariosController : Controller
     {
-        private RepositoryUsuario repo;
+        private RepositoryAlmacen repo;
 
-        public UsuariosController(RepositoryUsuario repo)
+        public UsuariosController(RepositoryAlmacen repo)
         {
             this.repo = repo;
         }

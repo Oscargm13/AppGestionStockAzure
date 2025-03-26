@@ -6,9 +6,9 @@ namespace AppGestionStock.Controllers
 {
     public class ProveedoresController : Controller
     {
-        private RepositoryClientes repo;
+        private RepositoryAlmacen repo;
 
-        public ProveedoresController(RepositoryClientes repo)
+        public ProveedoresController(RepositoryAlmacen repo)
         {
             this.repo = repo;
         }

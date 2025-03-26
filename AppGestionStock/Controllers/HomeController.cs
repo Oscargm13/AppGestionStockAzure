@@ -9,52 +9,47 @@ namespace AppGestionStock.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private RepositoyProductos repoProductos;
-        private RepositoryInventario repoInventario;
-        private RepositoryClientes repoClientes;
+        private RepositoryAlmacen repo;
 
-        public HomeController(ILogger<HomeController> logger, RepositoyProductos repoProductos,
-            RepositoryInventario repoInventario, RepositoryClientes repoClientes)
+        public HomeController(ILogger<HomeController> logger, RepositoryAlmacen repo)
         {
             _logger = logger;
-            this.repoProductos = repoProductos;
-            this.repoInventario = repoInventario;
-            this.repoClientes = repoClientes;
+            this.repo = repo;
         }
 
         public async Task<IActionResult> Index()
         {
             //Calculo de clientes
-            List<Cliente> clientes = await this.repoClientes.GetClientes();
+            List<Cliente> clientes = await this.repo.GetClientes();
             int numeroClientes = clientes.Count();
             ViewData["NUMEROCLIENTES"] = numeroClientes;
 
 
             // Cálculo del stock total
             var usuario = HttpContext.Session.GetObject<Usuario>("USUARIO");
-            int stockTotalGerente = this.repoProductos.GetTotalStockGerente(usuario.IdUsuario);
+            int stockTotalGerente = this.repo.GetTotalStockGerente(usuario.IdUsuario);
             ViewData["STOCKTOTAL"] = stockTotalGerente;
 
             // Cálculo de los ingresos mensuales
             int mesActual = DateTime.Now.Month;
             int añoActual = DateTime.Now.Year;
-            decimal ingresosMensuales = await repoInventario.GetIngresosMes(mesActual, añoActual);
+            decimal ingresosMensuales = await repo.GetIngresosMes(mesActual, añoActual);
             ViewData["INGRESOSMENSUALES"] = ingresosMensuales;
             ViewData["MESACTUAL"] = mesActual;
             ViewData["AÑOACTUAL"] = añoActual;
 
             // Obtener la lista de movimientos de inventario y almacenarlos en la sesión
-            List<VistaInventarioDetalladoVenta> inventario = await this.repoInventario.GetMovimientos();
+            List<VistaInventarioDetalladoVenta> inventario = await this.repo.GetMovimientos();
             HttpContext.Session.SetObject("INVENTARIO", inventario);
 
             // Obtener notificaciones en caso de haberlas
-            List<Notificacion> notificaciones = await repoInventario.GetNotificaciones();
+            List<Notificacion> notificaciones = await repo.GetNotificaciones();
             //ViewData["NOTIFICACIONES"] = notificaciones;
             HttpContext.Session.SetObject("NOTIFICACIONES", notificaciones);
 
             // Obtener ventas y compras
-            List<Venta> ventas = await this.repoInventario.GetVentas();
-            List<Compra> compras = await this.repoInventario.GetCompras();
+            List<Venta> ventas = await this.repo.GetVentas();
+            List<Compra> compras = await this.repo.GetCompras();
 
             // Agrupar ventas por mes
             var ventasMensuales = ventas
