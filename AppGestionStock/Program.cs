@@ -25,7 +25,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // Movemos UseStaticFiles aquí
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
@@ -35,6 +35,6 @@ app.UseMiddleware<AuthenticationMiddleware>();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets(); // sobra
+    .WithStaticAssets();
 
 app.Run();
