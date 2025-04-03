@@ -1,22 +1,25 @@
 ﻿using AppGestionStock.Models;
 using AppGestionStock.Repositories;
+using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppGestionStock.Controllers
 {
     public class ClientesController : Controller
     {
-        private RepositoryAlmacen repo;
+        //private RepositoryAlmacen repo;
+        private ServiceAlmacenes service;
 
-        public ClientesController(RepositoryAlmacen repo)
+        public ClientesController(RepositoryAlmacen repo, ServiceAlmacenes service)
         {
-            this.repo = repo;
+            //this.repo = repo;
+            this.service = service;
         }
         //CLIENTES
 
         public async Task<IActionResult> Clientes()
         {
-            List<Cliente> clientes = await this.repo.GetClientes();
+            List<Cliente> clientes = await this.service.GetClientesAsync();
             return View(clientes);
         }
 
@@ -31,7 +34,7 @@ namespace AppGestionStock.Controllers
         {
             if (ModelState.IsValid)
             {
-                await this.repo.CreateCliente(cliente);
+                await this.service.CreateClienteAsync(cliente);
                 return RedirectToAction("Clientes");
             }
             return View(cliente);
@@ -40,7 +43,7 @@ namespace AppGestionStock.Controllers
         // EDIT
         public async Task<IActionResult> Edit(int id)
         {
-            Cliente cliente = await this.repo.FindCliente(id);
+            Cliente cliente = await this.service.FindClienteAsync(id);
             if (cliente == null)
             {
                 return NotFound();
@@ -53,7 +56,7 @@ namespace AppGestionStock.Controllers
         {
             if (ModelState.IsValid)
             {
-                await this.repo.UpdateCliente(cliente);
+                await this.service.UpdateClienteAsync(cliente);
                 return RedirectToAction("Clientes");
             }
             return View(cliente);
@@ -61,7 +64,7 @@ namespace AppGestionStock.Controllers
 
         public async Task<IActionResult> Delete(int id)
         {
-            await this.repo.DeleteCliente(id);
+            await this.service.DeleteClienteAsync(id);
             return RedirectToAction("Clientes");
         }
     }

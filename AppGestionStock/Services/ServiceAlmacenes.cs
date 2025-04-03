@@ -2,6 +2,7 @@
 using System.Text;
 using AppGestionStock.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AppGestionStock.Services
 {
@@ -9,13 +10,15 @@ namespace AppGestionStock.Services
     {
         private string UrlApi;
         private MediaTypeWithQualityHeaderValue header;
+        private IHttpContextAccessor contextAccessor;
 
-        public ServiceAlmacenes(IConfiguration configuration)
+        public ServiceAlmacenes(IConfiguration configuration, IHttpContextAccessor contextAccessor)
         {
             this.header = new MediaTypeWithQualityHeaderValue("application/json");
             this.UrlApi = configuration.GetValue<string>("ApiUrls:ApiAlmacenes");
+            this.contextAccessor = contextAccessor;
         }
-
+        
         private async Task<T> CallApiAsync<T>(string request, HttpMethod method, object data = null)
         {
             using (HttpClient client = new HttpClient())
@@ -44,10 +47,10 @@ namespace AppGestionStock.Services
                     else
                     {
                         T result = await response.Content.ReadAsAsync<T>();
-                        if (result == null)
-                        {
-                            throw new Exception("Error: La API devolvió datos inválidos o nulos.");
-                        }
+                        //if (result == null)
+                        //{
+                        //    throw new Exception("Error: La API devolvió datos inválidos o nulos.");
+                        //}
 
                         return result;
                     }
@@ -60,7 +63,7 @@ namespace AppGestionStock.Services
                 }
             }
         }
-
+        //CLIENTES
         public async Task<List<Cliente>> GetClientesAsync()
         {
             string request = "api/clientes";
@@ -89,6 +92,38 @@ namespace AppGestionStock.Services
         {
             string request = $"api/clientes/{id}";
             return await CallApiAsync<string>(request, HttpMethod.Delete);
+        }
+        //Usuarios
+        public async Task<string> GetTokenAsync(string email, string pass)
+        {
+            using(HttpClient client = new HttpClient())
+            {
+                string request = "api/Auth/Login";
+                client.BaseAddress = new Uri(this.UrlApi);
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Accept.Add(this.header);
+                LoginModel model = new LoginModel
+                {
+                    userName = email,
+                    password = pass
+                };
+                string json = JsonConvert.SerializeObject(model);
+                StringContent content = new StringContent
+                (json, Encoding.UTF8, "application/json");
+                HttpResponseMessage response =
+                await client.PostAsync(request, content);
+                if (response.IsSuccessStatusCode)
+                {
+                    string data = await response.Content.ReadAsStringAsync();
+                    JObject keys = JObject.Parse(data);
+                    string token = keys.GetValue("response").ToString();
+                    return token;
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
     }
 }

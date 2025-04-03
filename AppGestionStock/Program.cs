@@ -1,6 +1,7 @@
 using AppGestionStock.Data;
 using AppGestionStock.Middlewares;
 using AppGestionStock.Repositories;
+using AppGestionStock.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 
 builder.Services.AddTransient<RepositoryAlmacen>();
+builder.Services.AddTransient<ServiceAlmacenes>();
 string connectionString = builder.Configuration.GetConnectionString("SqlAzure");
 //builder.Services.AddDbContext<AlmacenesContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddDbContext<AlmacenesContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Scoped);

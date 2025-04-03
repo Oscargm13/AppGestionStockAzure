@@ -501,7 +501,7 @@ namespace AppGestionStock.Repositories
             List<Usuario> usuarios = await this.GetUsuariosAsync();
             foreach (Usuario usuario in usuarios)
             {
-                if (usuario.Nombre == nombreUsuario && usuario.Password == password)
+                if (usuario.Email == nombreUsuario && usuario.Password == password)
                 {
                     return usuario;
                 }

@@ -28,6 +28,7 @@ namespace AppGestionStock.Data
 
         //MODELS USUARIOS
         public DbSet<Usuario> Usuarios { get; set; }
+        //public DbSet<LoginModel> LoginModel { get; set; }
 
         //INVENTARIO
         public DbSet<Inventario> Inventario { get; set; }

@@ -11,7 +11,7 @@
 
         public async Task Invoke(HttpContext context)
         {
-            if (!context.Session.Keys.Contains("IDUSUARIO")) // Verifica si el usuario está autenticado
+            if (!context.Session.Keys.Contains("TOKEN")) // Verifica si el usuario está autenticado
             {
                 if (!context.Request.Path.StartsWithSegments("/Usuarios/LogIn")) // Evita bucles de redirección
                 {
