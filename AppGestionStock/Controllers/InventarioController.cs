@@ -1,6 +1,7 @@
 ﻿using AppGestionStock.Extensions;
 using AppGestionStock.Models;
 using AppGestionStock.Repositories;
+using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
 
 #region
@@ -110,9 +111,11 @@ namespace AppGestionStock.Controllers
     public class InventarioController : Controller
     {
         private RepositoryAlmacen repo;
-        public InventarioController(RepositoryAlmacen repo)
+        private ServiceAlmacenes service;
+        public InventarioController(RepositoryAlmacen repo, ServiceAlmacenes service)
         {
             this.repo = repo;
+            this.service = service;
         }
         public async Task<IActionResult> Index()
         {
@@ -122,50 +125,60 @@ namespace AppGestionStock.Controllers
 
         public async Task<IActionResult> Venta()
         {
-            List<Tienda> tiendas = this.repo.GetTiendas();
+            List<Tienda> tiendas = await this.service.GetTiendasAsync();
             ViewData["TIENDAS"] = tiendas;
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Venta(Venta venta, string siguientePaso,
-            List<int> idProducto, List<int> cantidad, List<decimal> precioUnidad)
+        public async Task<IActionResult> Venta(
+    Venta venta,
+    string siguientePaso,
+    List<int> idProducto,
+    List<int> cantidad,
+    List<decimal> precioUnidad)
         {
             if (!string.IsNullOrEmpty(siguientePaso) && siguientePaso == "true")
             {
-                // Obtener los productos de la tienda seleccionada
-                List<VistaProductoTienda> productos = this.repo.GetVistaProductosTienda(venta.IdTienda);
+                // Cargar productos y tiendas
+                List<VistaProductoTienda> productos = await this.service.GetVistaProductosTiendaAsync(venta.IdTienda);
                 ViewData["PRODUCTOS"] = productos;
-                ViewData["TIENDAS"] = this.repo.GetTiendas(); // Asegura que las tiendas se envíen de nuevo
+                ViewData["TIENDAS"] = await this.service.GetTiendasAsync(); // Asegura que se vuelva a enviar
 
-                // Pasar los datos de la primera parte del formulario a la vista
                 return View("Venta", venta);
             }
 
-            decimal importe = 0;
-            if (cantidad != null && precioUnidad != null && idProducto != null &&
-                cantidad.Count == precioUnidad.Count && cantidad.Count == idProducto.Count &&
-                cantidad.Count > 0)
-            {
-                for (int i = 0; i < cantidad.Count; i++)
-                {
-                    importe += precioUnidad[i] * cantidad[i];
-                }
-            }
-            else
+            // Validaciones básicas de listas
+            if (cantidad == null || precioUnidad == null || idProducto == null ||
+                cantidad.Count != precioUnidad.Count || cantidad.Count != idProducto.Count || cantidad.Count == 0)
             {
                 return BadRequest("Las listas de cantidad, precioUnidad o idProducto son inválidas.");
             }
 
-            // 1. Crear el objeto Venta
-            venta.IdUsuario = HttpContext.Session.GetObject<Usuario>("USUARIO").IdUsuario;
-            venta.ImporteTotal = importe;
+            // Calcular importe total
+            decimal importe = 0;
+            for (int i = 0; i < cantidad.Count; i++)
+            {
+                importe += precioUnidad[i] * cantidad[i];
+            }
 
-            // 2. Crear la lista de DetallesVenta
-            var detallesVenta = new List<DetallesVenta>();
+            // Obtener el usuario logueado
+            Usuario usuario = HttpContext.Session.GetObject<Usuario>("USUARIO");
+
+            // Armar el DTO
+            var ventaDto = new VentaConDetallesDto
+            {
+                FechaVenta = venta.FechaVenta,
+                IdTienda = venta.IdTienda,
+                IdUsuario = usuario.IdUsuario,
+                ImporteTotal = importe,
+                IdCliente = venta.IdCliente,
+                Detalles = new List<DetalleVentaDto>()
+            };
+
             for (int i = 0; i < idProducto.Count; i++)
             {
-                detallesVenta.Add(new DetallesVenta
+                ventaDto.Detalles.Add(new DetalleVentaDto
                 {
                     IdProducto = idProducto[i],
                     Cantidad = cantidad[i],
@@ -173,14 +186,14 @@ namespace AppGestionStock.Controllers
                 });
             }
 
-            // 3. Llamar al repositorio para procesar la venta
-            await this.repo.ProcesarVenta(venta, detallesVenta);
-            ViewData["MensajeExito"] = "Venta registrada con exito";
+            // Llamar al servicio (API)
+            await this.service.ProcesarVentaAsync(ventaDto);
 
+            ViewData["MensajeExito"] = "Venta registrada con éxito";
 
-            // 4. Retornar una respuesta exitosa
             return RedirectToAction("Index", "Home");
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken] // Importante para seguridad CSRF
         public async Task<IActionResult> DeleteNotificacion([FromBody] DeleteNotificacionRequest request)
@@ -192,7 +205,7 @@ namespace AppGestionStock.Controllers
 
             try
             {
-                await repo.DeleteNotificacion(request.IdNotificacion); // Usa el ID del objeto request
+                await this.service.DeleteNotificacionAsync(request.IdNotificacion);
                 return Json(new { success = true });
             }
             catch (Exception ex)
@@ -203,8 +216,8 @@ namespace AppGestionStock.Controllers
 
         public async Task<IActionResult> Compra()
         {
-            List<Proveedor> proveedores = await repo.GetProveedores();
-            List<Tienda> tiendas = repo.GetTiendas();
+            List<Proveedor> proveedores = await service.GetProveedoresAsync();
+            List<Tienda> tiendas = await service.GetTiendasAsync();
 
             ViewData["PROVEEDORES"] = proveedores;
             ViewData["TIENDAS"] = tiendas;
@@ -271,15 +284,15 @@ namespace AppGestionStock.Controllers
         }
         public IActionResult GetProductosProveedor(int proveedorId)
         {
-            var productosTask = repo.GetProductosProveedor(proveedorId);
+            var productosTask = this.service.GetProductosProveedorAsync(proveedorId);
             var productos = productosTask.Result;
 
             return Json(productos.Select(p => new { p.IdProducto, p.Nombre }));
         }
 
-        public IActionResult GetCostoProducto(int productoId)
+        public async Task<IActionResult> GetCostoProducto(int productoId)
         {
-            Producto producto = repo.GetProductoPorId(productoId);
+            Producto producto = await this.service.GetProductoPorIdAsync(productoId);
             if (producto != null)
             {
                 return Json(producto.Coste);

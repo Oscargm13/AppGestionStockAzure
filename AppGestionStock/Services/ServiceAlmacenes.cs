@@ -150,7 +150,7 @@ namespace AppGestionStock.Services
 
         public async Task<List<Tienda>> GetTiendasAsync()
         {
-            return await this.GetAsync<List<Tienda>>("api/tiendas");
+            return await this.GetAsync<List<Tienda>>("api/Tiendas");
         }
 
         public async Task<Tienda> FindTiendaAsync(int id)
@@ -511,23 +511,6 @@ namespace AppGestionStock.Services
         }
 
         public class DetalleCompraDto
-        {
-            public int IdProducto { get; set; }
-            public int Cantidad { get; set; }
-            public decimal PrecioUnidad { get; set; }
-        }
-
-        public class VentaConDetallesDto
-        {
-            public DateTime FechaVenta { get; set; }
-            public int IdTienda { get; set; }
-            public int IdUsuario { get; set; }
-            public decimal ImporteTotal { get; set; }
-            public int IdCliente { get; set; }
-            public List<DetalleVentaDto> Detalles { get; set; }
-        }
-
-        public class DetalleVentaDto
         {
             public int IdProducto { get; set; }
             public int Cantidad { get; set; }

@@ -10,18 +10,18 @@ namespace AppGestionStock.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private RepositoryAlmacen repo;
         private ServiceAlmacenes service;
 
-        public HomeController(ILogger<HomeController> logger, RepositoryAlmacen repo, ServiceAlmacenes service)
+        public HomeController(ILogger<HomeController> logger, ServiceAlmacenes service)
         {
             _logger = logger;
-            this.repo = repo;
             this.service = service;
         }
 
         public async Task<IActionResult> Index()
         {
+            List<Tienda> tiendas = await this.service.GetTiendasAsync();
+            ViewData["TIENDAS"] = tiendas;
             //Calculo de clientes
             List<Cliente> clientes = await this.service.GetClientesAsync();
             int numeroClientes = clientes.Count();

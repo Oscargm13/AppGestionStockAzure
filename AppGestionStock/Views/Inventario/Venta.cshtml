@@ -424,7 +424,7 @@
             let precioUnidadInput = document.createElement('input');
             precioUnidadInput.type = 'hidden';
             precioUnidadInput.name = `precioUnidad[${index}]`;
-            precioUnidadInput.value = detalle.PrecioUnidad;
+            precioUnidadInput.value = parseFloat(detalle.PrecioUnidad).toFixed(2);
             this.appendChild(precioUnidadInput);
         });
     });
