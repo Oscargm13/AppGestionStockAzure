@@ -144,7 +144,7 @@ namespace AppGestionStock.Repositories
             Producto nuevoProducto = new Producto
             {
                 Nombre = nombreProducto,
-                Precio = precio,
+                Precio = precio, 
                 Coste = coste,
                 IdCategoria = categoria.IdCategoria,
                 Imagen = imagen

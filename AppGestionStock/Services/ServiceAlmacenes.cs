@@ -142,5 +142,132 @@ namespace AppGestionStock.Services
 
         public async Task DeleteProveedorAsync(int id) =>
             await this.DeleteAsync($"api/proveedores/{id}");
+
+        // ========================
+        // TIENDAS
+        // ========================
+
+        public async Task<List<Tienda>> GetTiendasAsync()
+        {
+            return await this.GetAsync<List<Tienda>>("api/tiendas");
+        }
+
+        public async Task<Tienda> FindTiendaAsync(int id)
+        {
+            return await this.GetAsync<Tienda>($"api/tiendas/{id}");
+        }
+
+        public async Task CreateTiendaAsync(Tienda tienda)
+        {
+            await this.PostAsync("api/tiendas", tienda);
+        }
+
+        public async Task UpdateTiendaAsync(Tienda tienda)
+        {
+            await this.PutAsync($"api/tiendas/{tienda.IdTienda}", tienda);
+        }
+
+        public async Task DeleteTiendaAsync(int id)
+        {
+            await this.DeleteAsync($"api/tiendas/{id}");
+        }
+
+        // ========================
+        // PRODUCTOS
+        // ========================
+
+        public async Task<List<Producto>> GetProductosAsync()
+        {
+            return await this.GetAsync<List<Producto>>("api/productos");
+        }
+
+        public async Task<Producto> FindProductoAsync(int id)
+        {
+            return await this.GetAsync<Producto>($"api/productos/{id}");
+        }
+
+        public async Task<List<Producto>> GetProductosProveedorAsync(int proveedorId)
+        {
+            return await this.GetAsync<List<Producto>>($"api/productos/proveedor/{proveedorId}");
+        }
+
+        public async Task<List<VistaProductoTienda>> GetAllVistaProductosTiendaAsync()
+        {
+            return await this.GetAsync<List<VistaProductoTienda>>("api/productos/tienda");
+        }
+
+        public async Task<List<VistaProductoTienda>> GetVistaProductosTiendaAsync(int idTienda)
+        {
+            return await this.GetAsync<List<VistaProductoTienda>>($"api/productos/tienda/{idTienda}");
+        }
+
+        public async Task<List<VistaProductoTienda>> GetVistaProductosTiendaConStockBajoAsync()
+        {
+            return await this.GetAsync<List<VistaProductoTienda>>("api/productos/tienda/stockbajo");
+        }
+
+        public async Task<List<ProductosTienda>> GetProductosTiendaGerenteAsync(int idGerente)
+        {
+            return await this.GetAsync<List<ProductosTienda>>($"api/productos/gerente/{idGerente}");
+        }
+
+        public async Task<List<VistaProductosGerente>> GetProductosGerenteAsync(int idUsuarioGerente)
+        {
+            return await this.GetAsync<List<VistaProductosGerente>>($"api/productos/gerente/productos/{idUsuarioGerente}");
+        }
+
+        public async Task<int> GetTotalStockGerenteAsync(int idUsuarioGerente)
+        {
+            return await this.GetAsync<int>($"api/productos/gerente/stock/{idUsuarioGerente}");
+        }
+
+        public async Task<VistaProductoTienda> GetProductoTiendaAsync(int idTienda, int idProducto)
+        {
+            return await this.GetAsync<VistaProductoTienda>($"api/productos/tienda/{idTienda}/producto/{idProducto}");
+        }
+
+        public async Task CreateProductoAsync(Producto producto, string? nombreCategoria, int? idCategoriaPadre)
+        {
+            var query = new StringBuilder("api/productos");
+
+            // Agregamos los query params si están definidos
+            var queryParams = new List<string>();
+            if (!string.IsNullOrWhiteSpace(nombreCategoria))
+            {
+                queryParams.Add($"nombreCategoria={Uri.EscapeDataString(nombreCategoria)}");
+            }
+            if (idCategoriaPadre.HasValue)
+            {
+                queryParams.Add($"idCategoriaPadre={idCategoriaPadre.Value}");
+            }
+
+            if (queryParams.Any())
+            {
+                query.Append("?").Append(string.Join("&", queryParams));
+            }
+
+            await this.PostAsync(query.ToString(), producto);
+        }
+
+        public async Task UpdateProductoAsync(int idProducto, Producto producto)
+        {
+            await this.PutAsync($"api/productos/{idProducto}", producto);
+        }
+
+        public async Task DeleteProductoAsync(int idProducto)
+        {
+            await this.DeleteAsync($"api/productos/{idProducto}");
+        }
+
+        public async Task<List<Categoria>> GetCategoriasAsync()
+        {
+            return await this.GetAsync<List<Categoria>>("api/productos/categorias");
+        }
+
+        public async Task<Producto> GetProductoPorIdAsync(int productoId)
+        {
+            return await this.GetAsync<Producto>($"api/productos/id/{productoId}");
+        }
+
     }
 }

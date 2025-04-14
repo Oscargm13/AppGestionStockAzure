@@ -17,6 +17,15 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                 <div class="form-group">
+                    <label asp-for="IdCategoria" class="control-label"></label>
+                    <select asp-for="IdCategoria" class="form-control"
+                            asp-items="@(new SelectList(categorias, "IdCategoria", "Nombre"))">
+                        <option value="">Seleccione una categoría</option>
+                    </select>
+                    <span asp-validation-for="IdCategoria" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
                     <label asp-for="Nombre" class="control-label"></label>
                     <input asp-for="Nombre" class="form-control" />
                     <span asp-validation-for="Nombre" class="text-danger"></span>
@@ -71,4 +80,18 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const idCategoria = document.querySelector("#IdCategoria");
+            const nombreCategoria = document.querySelector("input[name='nombreCategoria']");
+            const form = document.querySelector("form");
+
+            form.addEventListener("submit", function (e) {
+                if (!idCategoria.value && !nombreCategoria.value.trim()) {
+                    e.preventDefault();
+                    alert("Debe seleccionar una categoría existente o ingresar una nueva.");
+                }
+            });
+        });
+    </script>
 }

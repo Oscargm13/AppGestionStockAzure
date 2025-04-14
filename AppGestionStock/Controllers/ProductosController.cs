@@ -1,5 +1,6 @@
 ﻿using AppGestionStock.Models;
 using AppGestionStock.Repositories;
+using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -7,28 +8,28 @@ namespace AppGestionStock.Controllers
 {
     public class ProductosController : Controller
     {
-        private RepositoryAlmacen repo;
-        public ProductosController(RepositoryAlmacen repo)
+        private ServiceAlmacenes service;
+        public ProductosController(ServiceAlmacenes service)
         {
-            this.repo = repo;
+            this.service = service;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            List<Producto> productos = this.repo.GetProductos();
+            List<Producto> productos = await this.service.GetProductosAsync();
             return View(productos);
         }
         [HttpPost]
-        public IActionResult Index(int idTienda)
+        public async Task<IActionResult> Index(int idTienda)
         {
-            List<VistaProductoTienda> productos = this.repo.GetVistaProductosTienda(idTienda);
+            List<VistaProductoTienda> productos = await this.service.GetVistaProductosTiendaAsync(idTienda);
             return View(productos);
         }
 
-        public IActionResult ProductosTienda()
+        public async Task<IActionResult> ProductosTienda()
         {
-            List<VistaProductoTienda> productos = this.repo.GetAllVistaProductosTienda();
-            List<Tienda> tiendas = this.repo.GetTiendas();
+            List<VistaProductoTienda> productos = await this.service.GetAllVistaProductosTiendaAsync();
+            List<Tienda> tiendas = await this.service.GetTiendasAsync();
 
             // Agregar la opción "Todas las Tiendas"
             tiendas.Insert(0, new Tienda { IdTienda = 0, Nombre = "Todas las Tiendas" });
@@ -38,27 +39,18 @@ namespace AppGestionStock.Controllers
             return View(productos);
         }
 
-        //[HttpPost]
-        //public IActionResult ProductosTienda(int idTienda)
-        //{
-        //    List<VistaProductoTienda> productos = this.repo.GetVistaProductosTienda(idTienda); // Obtiene productos filtrados por tienda
-        //    List<Tienda> tiendas = this.repoTiendas.GetTiendas();
-        //    ViewData["Tiendas"] = new SelectList(tiendas, "IdTienda", "Nombre", idTienda); // Mantén la selección en el dropdown
-
-        //    return View(productos);
-        //}
         [HttpPost]
-        public IActionResult ProductosTienda(int idTienda)
+        public async Task<IActionResult> ProductosTienda(int idTienda)
         {
             List<VistaProductoTienda> productos;
 
             if (idTienda == 0)
             {
-                productos = this.repo.GetAllVistaProductosTienda();
+                productos = await this.service.GetAllVistaProductosTiendaAsync();
             }
             else
             {
-                productos = this.repo.GetVistaProductosTienda(idTienda);
+                productos = await this.service.GetVistaProductosTiendaAsync(idTienda);
             }
 
             return PartialView("_ProductosTiendaPartial", productos);
@@ -71,44 +63,88 @@ namespace AppGestionStock.Controllers
         }
 
         [HttpPost]
-        public IActionResult ProductosManager(int idUsuario)
+        public async Task<IActionResult> ProductosManager(int idUsuario)
         {
-            List<VistaProductosGerente> productos = this.repo.GetProductosGerente(idUsuario);
+            List<VistaProductosGerente> productos = await this.service.GetProductosGerenteAsync(idUsuario);
             return View(productos);
         }
 
         public async Task<IActionResult> CrearProducto()
         {
-            List<Categoria> categorias = await this.repo.GetCategoriasAsync();
+            List<Categoria> categorias = await this.service.GetCategoriasAsync();
             ViewData["CATEGORIAS"] = categorias;
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearProducto(string nombre, decimal precio, decimal coste, string nombreCategoria, int? idCategoriaPadre, string imagen)
+        public async Task<IActionResult> CrearProducto(
+    int? idCategoria,
+    string nombre,
+    decimal precio,
+    decimal coste,
+    string? nombreCategoria,
+    int? idCategoriaPadre,
+    string imagen)
         {
-            List<Categoria> categorias = await this.repo.GetCategoriasAsync();
-            ViewData["CATEGORIAS"] = categorias;
-            
-            this.repo.CrearProducto(nombre, precio, coste, nombreCategoria, idCategoriaPadre, imagen);
+            if (!idCategoria.HasValue && string.IsNullOrWhiteSpace(nombreCategoria))
+            {
+                ModelState.AddModelError("", "Debe seleccionar una categoría existente o introducir una nueva.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["CATEGORIAS"] = await this.service.GetCategoriasAsync();
+                return View(new Producto
+                {
+                    Nombre = nombre,
+                    Precio = precio,
+                    Coste = coste,
+                    Imagen = imagen
+                });
+            }
+
+            var producto = new Producto
+            {
+                IdCategoria = idCategoria ?? 0,
+                Nombre = nombre,
+                Precio = precio,
+                Coste = coste,
+                Imagen = imagen
+            };
+
+            await this.service.CreateProductoAsync(producto, nombreCategoria, idCategoriaPadre);
+
             return RedirectToAction("Index");
         }
 
+
+
         public async Task<IActionResult> UpdateProducto(int idProducto)
         {
-            Producto producto = await this.repo.FindProductoAsync(idProducto);
+            Producto producto = await this.service.FindProductoAsync(idProducto);
             return View(producto);
         }
         [HttpPost]
-        public async Task<IActionResult> UpdateProducto(int idProducto, string nombre, decimal precio, decimal coste, int idCategoria, string imagen)
+        public async Task<IActionResult> UpdateProducto(int idProducto, string nombre, decimal precio, decimal coste,
+            int idCategoria, string imagen)
         {
-            await this.repo.UpdateProductoAsync(idProducto, nombre, precio, coste, idCategoria, imagen);
+            Producto producto = new Producto
+            {
+                Nombre = nombre,
+                Precio = precio,
+                Coste = coste,
+                IdCategoria = idCategoria,
+                Imagen = imagen
+            };
+
+            await this.service.UpdateProductoAsync(idProducto, producto);
+
             return RedirectToAction("Index");
         }
 
         public async Task<IActionResult> EliminarProducto(int idProducto)
         {
-            await this.repo.EliminarProducto(idProducto);
+            await this.service.DeleteProductoAsync(idProducto);
             return RedirectToAction("Index");
         }
     }

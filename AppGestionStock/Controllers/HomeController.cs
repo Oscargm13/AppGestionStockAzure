@@ -2,6 +2,7 @@ using System.Diagnostics;
 using AppGestionStock.Extensions;
 using AppGestionStock.Models;
 using AppGestionStock.Repositories;
+using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppGestionStock.Controllers
@@ -10,17 +11,19 @@ namespace AppGestionStock.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private RepositoryAlmacen repo;
+        private ServiceAlmacenes service;
 
-        public HomeController(ILogger<HomeController> logger, RepositoryAlmacen repo)
+        public HomeController(ILogger<HomeController> logger, RepositoryAlmacen repo, ServiceAlmacenes service)
         {
             _logger = logger;
             this.repo = repo;
+            this.service = service;
         }
 
         public async Task<IActionResult> Index()
         {
             //Calculo de clientes
-            List<Cliente> clientes = await this.repo.GetClientes();
+            List<Cliente> clientes = await this.service.GetClientesAsync();
             int numeroClientes = clientes.Count();
             ViewData["NUMEROCLIENTES"] = numeroClientes;
 
