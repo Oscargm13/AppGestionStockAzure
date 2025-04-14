@@ -18,8 +18,11 @@ namespace AppGestionStock.Services
             this.UrlApi = configuration.GetValue<string>("ApiUrls:ApiAlmacenes");
             this.contextAccessor = contextAccessor;
         }
-        
-        private async Task<T> CallApiAsync<T>(string request, HttpMethod method, object data = null)
+
+        // ========================
+        // MÉTODOS GENERALES HTTP
+        // ========================
+        private async Task<T> SendRequestAsync<T>(string request, HttpMethod method, object data = null)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -37,81 +40,62 @@ namespace AppGestionStock.Services
 
                 HttpResponseMessage response = await client.SendAsync(httpRequest);
 
-                if (response.IsSuccessStatusCode)
-                {
-                    if (typeof(T) == typeof(string))
-                    {
-                        string stringData = await response.Content.ReadAsStringAsync();
-                        return (T)Convert.ChangeType(stringData, typeof(T));
-                    }
-                    else
-                    {
-                        T result = await response.Content.ReadAsAsync<T>();
-                        //if (result == null)
-                        //{
-                        //    throw new Exception("Error: La API devolvió datos inválidos o nulos.");
-                        //}
-
-                        return result;
-                    }
-                }
-                else
+                if (!response.IsSuccessStatusCode)
                 {
                     string errorContent = await response.Content.ReadAsStringAsync();
                     throw new Exception($"Error en la API: {response.StatusCode} - {errorContent}");
+                }
 
+                if (typeof(T) == typeof(string))
+                {
+                    string stringData = await response.Content.ReadAsStringAsync();
+                    return (T)Convert.ChangeType(stringData, typeof(T));
+                }
+                else if (response.Content.Headers.ContentLength == 0)
+                {
+                    return default(T);
+                }
+                else
+                {
+                    return await response.Content.ReadAsAsync<T>();
                 }
             }
         }
-        //CLIENTES
-        public async Task<List<Cliente>> GetClientesAsync()
-        {
-            string request = "api/clientes";
-            return await CallApiAsync<List<Cliente>>(request, HttpMethod.Get);
-        }
 
-        public async Task<Cliente> FindClienteAsync(int id)
-        {
-            string request = $"api/clientes/{id}";
-            return await CallApiAsync<Cliente>(request, HttpMethod.Get);
-        }
+        private async Task<T> GetAsync<T>(string request) =>
+            await this.SendRequestAsync<T>(request, HttpMethod.Get);
 
-        public async Task<Cliente> CreateClienteAsync(Cliente cliente)
-        {
-            string request = "api/clientes";
-            return await CallApiAsync<Cliente>(request, HttpMethod.Post, cliente);
-        }
+        private async Task PostAsync<T>(string request, T data) =>
+            await this.SendRequestAsync<string>(request, HttpMethod.Post, data);
 
-        public async Task<Cliente> UpdateClienteAsync(Cliente cliente)
-        {
-            string request = $"api/clientes";
-            return await CallApiAsync<Cliente>(request, HttpMethod.Put, cliente);
-        }
+        private async Task PutAsync<T>(string request, T data) =>
+            await this.SendRequestAsync<string>(request, HttpMethod.Put, data);
 
-        public async Task<string> DeleteClienteAsync(int id)
-        {
-            string request = $"api/clientes/{id}";
-            return await CallApiAsync<string>(request, HttpMethod.Delete);
-        }
-        //Usuarios
+        private async Task DeleteAsync(string request) =>
+            await this.SendRequestAsync<string>(request, HttpMethod.Delete);
+
+        // ========================
+        // AUTENTICACIÓN
+        // ========================
         public async Task<string> GetTokenAsync(string email, string pass)
         {
-            using(HttpClient client = new HttpClient())
+            using (HttpClient client = new HttpClient())
             {
                 string request = "api/Auth/Login";
                 client.BaseAddress = new Uri(this.UrlApi);
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Accept.Add(this.header);
+
                 LoginModel model = new LoginModel
                 {
                     userName = email,
                     password = pass
                 };
+
                 string json = JsonConvert.SerializeObject(model);
-                StringContent content = new StringContent
-                (json, Encoding.UTF8, "application/json");
-                HttpResponseMessage response =
-                await client.PostAsync(request, content);
+                StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await client.PostAsync(request, content);
                 if (response.IsSuccessStatusCode)
                 {
                     string data = await response.Content.ReadAsStringAsync();
@@ -119,11 +103,44 @@ namespace AppGestionStock.Services
                     string token = keys.GetValue("response").ToString();
                     return token;
                 }
-                else
-                {
-                    return null;
-                }
+                return null;
             }
         }
+
+        // ========================
+        // CLIENTES
+        // ========================
+        public async Task<List<Cliente>> GetClientesAsync() =>
+            await this.GetAsync<List<Cliente>>("api/clientes");
+
+        public async Task<Cliente> FindClienteAsync(int id) =>
+            await this.GetAsync<Cliente>($"api/clientes/{id}");
+
+        public async Task CreateClienteAsync(Cliente cliente) =>
+            await this.PostAsync("api/clientes", cliente);
+
+        public async Task UpdateClienteAsync(Cliente cliente) =>
+            await this.PutAsync("api/clientes", cliente);
+
+        public async Task DeleteClienteAsync(int id) =>
+            await this.DeleteAsync($"api/clientes/{id}");
+
+        // ========================
+        // PROVEEDORES
+        // ========================
+        public async Task<List<Proveedor>> GetProveedoresAsync() =>
+            await this.GetAsync<List<Proveedor>>("api/proveedores");
+
+        public async Task<Proveedor> FindProveedorAsync(int id) =>
+            await this.GetAsync<Proveedor>($"api/proveedores/{id}");
+
+        public async Task CreateProveedorAsync(Proveedor proveedor) =>
+            await this.PostAsync("api/proveedores", proveedor);
+
+        public async Task UpdateProveedorAsync(Proveedor proveedor) =>
+            await this.PutAsync("api/proveedores", proveedor);
+
+        public async Task DeleteProveedorAsync(int id) =>
+            await this.DeleteAsync($"api/proveedores/{id}");
     }
 }

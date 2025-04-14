@@ -1,4 +1,5 @@
-﻿using AppGestionStock.Models;
+﻿using AppGestionStock.Filters;
+using AppGestionStock.Models;
 using AppGestionStock.Repositories;
 using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,12 +8,10 @@ namespace AppGestionStock.Controllers
 {
     public class ClientesController : Controller
     {
-        //private RepositoryAlmacen repo;
         private ServiceAlmacenes service;
 
         public ClientesController(RepositoryAlmacen repo, ServiceAlmacenes service)
         {
-            //this.repo = repo;
             this.service = service;
         }
         //CLIENTES
@@ -41,6 +40,7 @@ namespace AppGestionStock.Controllers
         }
 
         // EDIT
+        //[AuthorizeUsuarios]
         public async Task<IActionResult> Edit(int id)
         {
             Cliente cliente = await this.service.FindClienteAsync(id);

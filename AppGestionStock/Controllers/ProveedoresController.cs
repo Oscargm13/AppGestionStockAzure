@@ -1,21 +1,22 @@
 ﻿using AppGestionStock.Models;
 using AppGestionStock.Repositories;
+using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppGestionStock.Controllers
 {
     public class ProveedoresController : Controller
     {
-        private RepositoryAlmacen repo;
+        private ServiceAlmacenes service;
 
-        public ProveedoresController(RepositoryAlmacen repo)
+        public ProveedoresController(ServiceAlmacenes service)
         {
-            this.repo = repo;
+            this.service = service;
         }
 
         public async Task<IActionResult> Index()
         {
-            List<Proveedor> proveedores = await this.repo.GetProveedores();
+            List<Proveedor> proveedores = await this.service.GetProveedoresAsync();
             return View(proveedores);
         }
 
@@ -29,7 +30,7 @@ namespace AppGestionStock.Controllers
         {
             if (ModelState.IsValid)
             {
-                await this.repo.CreateProveedor(proveedor);
+                await this.service.CreateProveedorAsync(proveedor);
                 return RedirectToAction("Index");
             }
             return View(proveedor);
@@ -37,7 +38,7 @@ namespace AppGestionStock.Controllers
 
         public async Task<IActionResult> ProveedorEdit(int id)
         {
-            Proveedor proveedor = await this.repo.FindProveedor(id);
+            Proveedor proveedor = await this.service.FindProveedorAsync(id);
             if (proveedor == null)
             {
                 return NotFound();
@@ -50,7 +51,7 @@ namespace AppGestionStock.Controllers
         {
             if (ModelState.IsValid)
             {
-                await this.repo.UpdateProveedor(proveedor);
+                await this.service.UpdateProveedorAsync(proveedor);
                 return RedirectToAction("Index");
             }
             return View(proveedor);
@@ -58,7 +59,7 @@ namespace AppGestionStock.Controllers
 
         public async Task<IActionResult> ProveedorDelete(int id)
         {
-            await this.repo.DeleteProveedor(id);
+            await this.service.DeleteProveedorAsync(id);
             return RedirectToAction("Index");
         }
     }
