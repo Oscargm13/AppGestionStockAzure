@@ -42,26 +42,42 @@ namespace AppGestionStock.Controllers
 
                 return RedirectToAction("Index", "Home");
             }
-            
+
 
             ViewData["MensajeError"] = "Nombre de usuario o contraseña incorrectos.";
             return View();
         }
-        //public async Task<IActionResult> LogIn(string nombre, string pass)
-        //{
-        //    Usuario usuario = await repo.CompararUsuario(nombre, pass);
 
-        //    if (usuario != null)
+        //[HttpPost]
+        //public async Task<IActionResult> LogIn(string email, string pass)
+        //{
+        //    try
         //    {
+        //        // Obtener token
+        //        string token = await service.GetTokenAsync(email, pass);
+
+        //        if (token == null)
+        //        {
+        //            ViewData["MensajeError"] = "Nombre de usuario o contraseña incorrectos.";
+        //            return View();
+        //        }
+
+        //        // Obtener datos del usuario autenticado desde la API
+        //        Usuario usuario = await service.LoginUsuarioAsync(email, pass);
+
+        //        // Guardar en sesión
+        //        HttpContext.Session.SetObject("TOKEN", token);
         //        HttpContext.Session.SetObject("USUARIO", usuario);
         //        HttpContext.Session.SetObject("EMAIL", usuario.Email);
         //        HttpContext.Session.SetObject("IDUSUARIO", usuario.IdUsuario);
 
         //        return RedirectToAction("Index", "Home");
         //    }
-
-        //    ViewData["MensajeError"] = "Nombre de usuario o contraseña incorrectos.";
-        //    return View();
+        //    catch (Exception ex)
+        //    {
+        //        ViewData["MensajeError"] = $"Error al iniciar sesión: {ex.Message}";
+        //        return View();
+        //    }
         //}
 
         public async Task<IActionResult> LogOut()

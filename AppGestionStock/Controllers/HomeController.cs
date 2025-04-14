@@ -30,29 +30,29 @@ namespace AppGestionStock.Controllers
 
             // Cálculo del stock total
             var usuario = HttpContext.Session.GetObject<Usuario>("USUARIO");
-            int stockTotalGerente = this.repo.GetTotalStockGerente(usuario.IdUsuario);
+            int stockTotalGerente = await this.service.GetTotalStockGerenteAsync(usuario.IdUsuario);
             ViewData["STOCKTOTAL"] = stockTotalGerente;
 
             // Cálculo de los ingresos mensuales
             int mesActual = DateTime.Now.Month;
             int añoActual = DateTime.Now.Year;
-            decimal ingresosMensuales = await repo.GetIngresosMes(mesActual, añoActual);
+            decimal ingresosMensuales = await service.GetIngresosMesAsync(mesActual, añoActual);
             ViewData["INGRESOSMENSUALES"] = ingresosMensuales;
             ViewData["MESACTUAL"] = mesActual;
             ViewData["AÑOACTUAL"] = añoActual;
 
             // Obtener la lista de movimientos de inventario y almacenarlos en la sesión
-            List<VistaInventarioDetalladoVenta> inventario = await this.repo.GetMovimientos();
+            List<VistaInventarioDetalladoVenta> inventario = await this.service.GetMovimientosAsync();
             HttpContext.Session.SetObject("INVENTARIO", inventario);
 
             // Obtener notificaciones en caso de haberlas
-            List<Notificacion> notificaciones = await repo.GetNotificaciones();
+            List<Notificacion> notificaciones = await service.GetNotificacionesAsync();
             //ViewData["NOTIFICACIONES"] = notificaciones;
             HttpContext.Session.SetObject("NOTIFICACIONES", notificaciones);
 
             // Obtener ventas y compras
-            List<Venta> ventas = await this.repo.GetVentas();
-            List<Compra> compras = await this.repo.GetCompras();
+            List<Venta> ventas = await this.service.GetVentasAsync();
+            List<Compra> compras = await this.service.GetComprasAsync();
 
             // Agrupar ventas por mes
             var ventasMensuales = ventas

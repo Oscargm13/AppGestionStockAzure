@@ -77,14 +77,8 @@ namespace AppGestionStock.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearProducto(
-    int? idCategoria,
-    string nombre,
-    decimal precio,
-    decimal coste,
-    string? nombreCategoria,
-    int? idCategoriaPadre,
-    string imagen)
+        public async Task<IActionResult> CrearProducto(int? idCategoria, string nombre, decimal precio, decimal coste,
+            string? nombreCategoria, int? idCategoriaPadre, string imagen)
         {
             if (!idCategoria.HasValue && string.IsNullOrWhiteSpace(nombreCategoria))
             {

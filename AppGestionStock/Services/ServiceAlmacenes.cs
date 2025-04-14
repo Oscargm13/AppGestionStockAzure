@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using AppGestionStock.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -269,5 +270,268 @@ namespace AppGestionStock.Services
             return await this.GetAsync<Producto>($"api/productos/id/{productoId}");
         }
 
+        // ========================
+        // USUARIOS
+        // ========================
+
+        public async Task<List<Usuario>> GetUsuariosAsync()
+        {
+            return await this.GetAsync<List<Usuario>>("api/usuario");
+        }
+
+        public async Task<Usuario> FindUsuarioAsync(int id)
+        {
+            return await this.GetAsync<Usuario>($"api/usuario/{id}");
+        }
+
+        public async Task<List<Rol>> GetRolesAsync()
+        {
+            return await this.GetAsync<List<Rol>>("api/usuario/roles");
+        }
+
+        public async Task LoginUsuarioAsync(string nombreUsuario, string password)
+        {
+            var values = new Dictionary<string, string>
+    {
+        { "nombreUsuario", nombreUsuario },
+        { "password", password }
+    };
+
+            var content = new FormUrlEncodedContent(values);
+
+            await this.PostAsync("api/usuario/login", content);
+
+            //using (HttpClient client = new HttpClient())
+            //{
+            //    client.BaseAddress = new Uri(this.UrlApi);
+            //    client.DefaultRequestHeaders.Clear();
+            //    client.DefaultRequestHeaders.Accept.Add(this.header);
+
+            //    HttpResponseMessage response = await client.PostAsync("api/usuario/login", content);
+
+            //    if (!response.IsSuccessStatusCode)
+            //    {
+            //        string error = await response.Content.ReadAsStringAsync();
+            //        throw new Exception($"Login fallido: {response.StatusCode} - {error}");
+            //    }
+
+            //    return await response.Content.ReadFromJsonAsync<Usuario>();
+            //}
+        }
+
+
+        public async Task CreateUsuarioAsync(string nombre, string email, string password, int idRol, string imagen, string nombreEmpresa)
+        {
+            var values = new Dictionary<string, string>
+    {
+        { "nombre", nombre },
+        { "email", email },
+        { "password", password },
+        { "idRol", idRol.ToString() },
+        { "imagen", imagen },
+        { "nombreEmpresa", nombreEmpresa }
+    };
+
+            var content = new FormUrlEncodedContent(values);
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(this.UrlApi);
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Accept.Add(this.header);
+
+                HttpResponseMessage response = await client.PostAsync("api/usuario", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string error = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al crear usuario: {response.StatusCode} - {error}");
+                }
+            }
+        }
+
+        public async Task DeleteUsuarioAsync(int id)
+        {
+            await this.DeleteAsync($"api/usuario/{id}");
+        }
+
+        // ========================
+        // Inventario
+        // ========================
+
+        public class PagedResult<T>
+        {
+            public List<T> Items { get; set; }
+            public int TotalCount { get; set; }
+            public int PageNumber { get; set; }
+            public int PageSize { get; set; }
+            public int TotalPages => (TotalCount + PageSize - 1) / PageSize;
+
+            public PagedResult(List<T> items, int totalCount, int pageNumber, int pageSize)
+            {
+                Items = items;
+                TotalCount = totalCount;
+                PageNumber = pageNumber;
+                PageSize = pageSize;
+            }
+        }
+
+        public async Task<List<VistaInventarioDetalladoVenta>> GetMovimientosAsync()
+        {
+            return await this.GetAsync<List<VistaInventarioDetalladoVenta>>("api/inventario/movimientos");
+        }
+
+        public async Task<PagedResult<VistaInventarioDetalladoVenta>> GetMovimientosPaginadosAsync(int pageNumber, int pageSize)
+        {
+            string request = $"api/inventario/movimientos/paginados?pageNumber={pageNumber}&pageSize={pageSize}";
+            return await this.GetAsync<PagedResult<VistaInventarioDetalladoVenta>>(request);
+        }
+
+        public async Task<List<Notificacion>> GetNotificacionesAsync()
+        {
+            return await this.GetAsync<List<Notificacion>>("api/inventario/notificaciones");
+        }
+
+        public async Task<bool> ExisteNotificacionAsync(int idProducto, int idTienda)
+        {
+            return await this.GetAsync<bool>($"api/inventario/notificaciones/existe/{idProducto}/{idTienda}");
+        }
+
+        public async Task CreateNotificacionAsync(Notificacion notificacion)
+        {
+            // Como el endpoint espera [FromForm], usamos FormUrlEncodedContent
+            var values = new Dictionary<string, string>
+            {
+                { "mensaje", notificacion.Mensaje },
+                { "fecha", notificacion.Fecha.ToString("o") },
+                { "idProducto", notificacion.IdProducto.ToString() },
+                { "idTienda", notificacion.IdTienda.ToString() }
+            };
+
+            var content = new FormUrlEncodedContent(values);
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(this.UrlApi);
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Accept.Add(this.header);
+
+                HttpResponseMessage response = await client.PostAsync("api/inventario/notificaciones", content);
+                if (!response.IsSuccessStatusCode)
+                {
+                    string error = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al crear notificación: {response.StatusCode} - {error}");
+                }
+            }
+        }
+
+        public async Task DeleteNotificacionAsync(int idNotificacion)
+        {
+            await this.DeleteAsync($"api/inventario/notificaciones/{idNotificacion}");
+        }
+
+        public async Task<int> CreateVentaAsync(DateTime fechaVenta, int idTienda, int idUsuario, decimal importeTotal, int idCliente)
+        {
+            var values = new Dictionary<string, string>
+            {
+                { "fechaVenta", fechaVenta.ToString("o") },
+                { "idTienda", idTienda.ToString() },
+                { "idUsuario", idUsuario.ToString() },
+                { "importeTotal", importeTotal.ToString(System.Globalization.CultureInfo.InvariantCulture) },
+                { "idCliente", idCliente.ToString() }
+            };
+
+            var content = new FormUrlEncodedContent(values);
+
+            using (HttpClient client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(this.UrlApi);
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Accept.Add(this.header);
+
+                HttpResponseMessage response = await client.PostAsync("api/inventario/ventas", content);
+                if (!response.IsSuccessStatusCode)
+                {
+                    string error = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al crear venta: {response.StatusCode} - {error}");
+                }
+
+                return int.Parse(await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        public async Task ProcesarVentaAsync(VentaConDetallesDto ventaDto)
+        {
+            await this.PostAsync("api/inventario/procesarventa", ventaDto);
+        }
+
+        public async Task<List<Venta>> GetVentasAsync()
+        {
+            return await this.GetAsync<List<Venta>>("api/inventario/ventas");
+        }
+
+        public async Task<Venta> GetVentaAsync(int id)
+        {
+            return await this.GetAsync<Venta>($"api/inventario/{id}");
+        }
+
+        public async Task AgregarDetalleVentaAsync(int idVenta, DetallesVenta detalle)
+        {
+            await this.PostAsync($"api/inventario/ventas/{idVenta}/detalles", detalle);
+        }
+
+        public async Task ProcesarCompraAsync(CompraConDetallesDto compraDto)
+        {
+            await this.PostAsync("api/inventario/procesarcompra", compraDto);
+        }
+
+        public async Task<List<Compra>> GetComprasAsync()
+        {
+            return await this.GetAsync<List<Compra>>("api/inventario/compras");
+        }
+
+        public async Task<decimal> GetIngresosMesAsync(int mes, int year)
+        {
+            return await this.GetAsync<decimal>($"api/inventario/ingresos/{mes}/{year}");
+        }
+
+        public async Task<DetallesVenta> GetDetallesVentaAsync(int idDetallesVenta)
+        {
+            return await this.GetAsync<DetallesVenta>($"api/inventario/detallesventa/{idDetallesVenta}");
+        }
+
+        public class CompraConDetallesDto
+        {
+            public DateTime FechaCompra { get; set; }
+            public int IdProveedor { get; set; }
+            public int IdTienda { get; set; }
+            public decimal ImporteTotal { get; set; }
+            public int IdUsuario { get; set; }
+            public List<DetalleCompraDto> Detalles { get; set; }
+        }
+
+        public class DetalleCompraDto
+        {
+            public int IdProducto { get; set; }
+            public int Cantidad { get; set; }
+            public decimal PrecioUnidad { get; set; }
+        }
+
+        public class VentaConDetallesDto
+        {
+            public DateTime FechaVenta { get; set; }
+            public int IdTienda { get; set; }
+            public int IdUsuario { get; set; }
+            public decimal ImporteTotal { get; set; }
+            public int IdCliente { get; set; }
+            public List<DetalleVentaDto> Detalles { get; set; }
+        }
+
+        public class DetalleVentaDto
+        {
+            public int IdProducto { get; set; }
+            public int Cantidad { get; set; }
+            public decimal PrecioUnidad { get; set; }
+        }
     }
 }
