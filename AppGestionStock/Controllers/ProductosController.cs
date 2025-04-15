@@ -55,37 +55,16 @@ namespace AppGestionStock.Controllers
             return PartialView("_ProductosTiendaPartial", productos);
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> ActualizarStock([FromBody] ActualizarStockModel model)
-        //{
-        //    try
-        //    {
-        //        // Añadir tu lógica aquí para actualizar el stock
-        //        bool resultado = await this.service.ActualizarStockProductoTiendaAsync(
-        //            model.IdProducto,
-        //            model.IdTienda,
-        //            model.Cantidad);
+        [HttpPost]
+        public async Task<IActionResult> ActualizarStock([FromBody] ActualizarStockModel model)
+        {
 
-        //        if (resultado)
-        //        {
-        //            return Ok(new { success = true });
-        //        }
-        //        else
-        //        {
-        //            return BadRequest(new { success = false, message = "No se pudo actualizar el stock" });
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { success = false, message = ex.Message });
-        //    }
-        //}
-        //public class ActualizarStockModel
-        //{
-        //    public int IdProducto { get; set; }
-        //    public int IdTienda { get; set; }
-        //    public int Cantidad { get; set; }
-        //}
+                await this.service.ActualizarStockAsync(
+                    model.IdProducto,
+                    model.IdTienda,
+                    model.Cantidad);
+            return Ok();
+        }
 
         public IActionResult ProductosManager()
         {

@@ -283,6 +283,20 @@ namespace AppGestionStock.Services
             return await this.GetAsync<Producto>($"api/productos/id/{productoId}");
         }
 
+        public async Task ActualizarStockAsync(int idProducto, int idTienda, int cantidad)
+        {
+            var model = new ActualizarStockModel
+            {
+                IdProducto = idProducto,
+                IdTienda = idTienda,
+                Cantidad = cantidad
+            };
+
+            string request = "api/Productos/actualizar-stock";
+            await this.PostAsync<ActualizarStockModel>(request, model);
+        }
+
+
         // ========================
         // USUARIOS
         // ========================
