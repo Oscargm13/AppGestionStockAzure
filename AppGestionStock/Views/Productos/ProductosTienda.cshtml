@@ -1,49 +1,154 @@
 ﻿@model IEnumerable<AppGestionStock.Models.VistaProductoTienda>
-
 @{
-    ViewData["Title"] = "ProductosTienda";
+    ViewData["Title"] = "Productos en Tienda";
 }
 
-<h1 class="text-center">Productos en Tienda</h1>
+<div class="container py-4">
+    <h1 class="display-4 text-center mb-4">Productos en Tienda</h1>
 
-<form id="tiendaForm" method="post">
-    <div class="form-group">
-        <select name="idTienda" id="idTienda" class="form-control" asp-items="ViewBag.Tiendas"></select>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form id="tiendaForm" method="post" class="row align-items-end">
+                <div class="col-md-10">
+                    <label for="idTienda" class="form-label">Seleccione una tienda:</label>
+                    <select name="idTienda" id="idTienda" class="form-select" asp-items="ViewBag.Tiendas"></select>
+                </div>
+                <div class="col-md-2 mt-3 mt-md-0">
+                    <a id="generarPdfStock" class="btn btn-secondary disabled w-100">
+                        <i class="me-2" data-lucide="file-text"></i> Generar PDF
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-</form>
-<br />
-<a id="generarPdfStock" class="btn btn-secondary disabled" style="width: 100%">Generar PDF de Stock</a>
 
-<div id="productosContainer" class="row">
-    @foreach (var item in Model)
-    {
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <img src="~/images/Productos/@item.Imagen" class="card-img-top" alt="@item.Nombre" style="max-height: 200px; object-fit: contain;">
-                <div class="card-body">
-                    <h5 class="card-title">@item.Nombre</h5>
-                    <p class="card-text">
-                        <strong>Precio:</strong> @item.Precio<br />
-                        <strong>Coste:</strong> @item.Coste<br />
-                        <strong>Categoría:</strong> @item.IdCategoria<br />
-                        <strong>Stock:</strong> @item.StockTienda <br />
-                        <strong>Tienda:</strong> @item.IdTienda
-                    </p>
-                    <div class="d-flex justify-content-between">
-                        <a asp-action="UpdateProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-sm btn-primary"><i data-lucide="pencil"></i></a>
-                        <a asp-action="EliminarProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-sm btn-danger"><i data-lucide="trash-2"></i></a>
+    <!-- Contenedor de productos -->
+    <div id="productosContainer" class="row g-4">
+        @if (ViewBag.IdTiendaActual == null || ViewBag.IdTiendaActual == 0)
+        {
+            <!-- Vista para "Todas las tiendas" (agrupada por IdProducto) -->
+            @foreach (var grupo in Model.GroupBy(p => p.IdProducto))
+            {
+                var producto = grupo.First();
+                var stockTotal = grupo.Sum(p => p.StockTienda);
+                var tiendas = string.Join(", ", grupo.Select(p => p.IdTienda).Distinct());
+
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0 producto-card">
+                        <div class="position-relative">
+                            <img src="~/images/Productos/@producto.Imagen" class="card-img-top p-3" alt="@producto.Nombre" style="height: 200px; object-fit: contain;">
+                            <span class="position-absolute top-0 end-0 m-2 badge bg-primary rounded-pill">@stockTotal</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">@producto.Nombre</h5>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <span class="text-muted small">Precio:</span>
+                                    <p class="mb-0 fw-bold text-primary">€@producto.Precio</p>
+                                </div>
+                                <div class="col-6">
+                                    <span class="text-muted small">Coste:</span>
+                                    <p class="mb-0 fw-bold text-secondary">€@producto.Coste</p>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted small">Categoría:</span>
+                                <p class="mb-0">@producto.IdCategoria</p>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted small">Tiendas:</span>
+                                <p class="mb-0">@tiendas</p>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="UpdateProducto" asp-route-idProducto="@producto.IdProducto" class="btn btn-outline-primary">
+                                    <i data-lucide="pencil"></i>
+                                </a>
+                                <a asp-action="EliminarProducto" asp-route-idProducto="@producto.IdProducto" class="btn btn-outline-danger">
+                                    <i data-lucide="trash-2"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            }
+        }
+        else
+        {
+            <!-- Vista para una tienda específica -->
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0 producto-card">
+                        <div class="position-relative">
+                            <img src="~/images/Productos/@item.Imagen" class="card-img-top p-3" alt="@item.Nombre" style="height: 200px; object-fit: contain;">
+                            <span class="position-absolute top-0 end-0 m-2 badge bg-primary rounded-pill">@item.StockTienda</span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">@item.Nombre</h5>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <span class="text-muted small">Precio:</span>
+                                    <p class="mb-0 fw-bold text-primary">€@item.Precio</p>
+                                </div>
+                                <div class="col-6">
+                                    <span class="text-muted small">Coste:</span>
+                                    <p class="mb-0 fw-bold text-secondary">€@item.Coste</p>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted small">Categoría:</span>
+                                <p class="mb-0">@item.IdCategoria</p>
+                            </div>
+                            <div class="mb-3">
+                                <span class="text-muted small">Tienda:</span>
+                                <p class="mb-0">@item.IdTienda</p>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0">
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="UpdateProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-outline-primary">
+                                    <i data-lucide="pencil"></i>
+                                </a>
+                                <div class="btn-group stock-controls">
+                                    <button type="button" class="btn btn-outline-danger stock-btn minus-btn" data-producto-id="@item.IdProducto">
+                                        <i data-lucide="minus"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success stock-btn plus-btn" data-producto-id="@item.IdProducto">
+                                        <i data-lucide="plus"></i>
+                                    </button>
+                                </div>
+                                <a asp-action="EliminarProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-outline-danger">
+                                    <i data-lucide="trash-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="stockToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                Stock actualizado correctamente.
             </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-    }
+    </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const generarPdfStockBtn = document.getElementById('generarPdfStock');
         const idTiendaSelect = document.getElementById('idTienda');
+        const toast = new bootstrap.Toast(document.getElementById('stockToast'));
 
+        // Función para actualizar el estado del botón PDF
         function actualizarEstadoBoton() {
             const tiendaId = parseInt(idTiendaSelect.value);
             if (tiendaId === 0) {
@@ -55,11 +160,13 @@
             }
         }
 
+        // Inicializar
         actualizarEstadoBoton();
 
+        // Evento de cambio de tienda
         idTiendaSelect.addEventListener('change', function() {
             actualizarEstadoBoton();
-            console.log('Evento change disparado');
+
             let idTienda = this.value;
             console.log('ID de tienda:', idTienda);
 
@@ -68,19 +175,78 @@
             })
             .then(response => response.text())
             .then(data => {
-                let tempDiv = document.createElement('div');
-                tempDiv.innerHTML = data;
-                let newProducts = tempDiv.querySelector('#productosContainer').innerHTML;
-                document.getElementById('productosContainer').innerHTML = newProducts;
+                document.getElementById('productosContainer').innerHTML = data;
                 lucide.createIcons();
+
+                // Configurar botones de stock después de cargar nuevos datos
+                configurarBotonesStock();
             });
         });
 
+        // Configurar botones de stock
+        function configurarBotonesStock() {
+            const plusButtons = document.querySelectorAll('.plus-btn');
+            const minusButtons = document.querySelectorAll('.minus-btn');
+
+            plusButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productoId = this.dataset.productoId;
+                    const tiendaId = parseInt(idTiendaSelect.value);
+                    actualizarStock(productoId, tiendaId, 1);
+                });
+            });
+
+            minusButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productoId = this.dataset.productoId;
+                    const tiendaId = parseInt(idTiendaSelect.value);
+                    actualizarStock(productoId, tiendaId, -1);
+                });
+            });
+        }
+
+        // Función para actualizar el stock
+        function actualizarStock(productoId, tiendaId, cantidad) {
+            fetch('/Productos/ActualizarStock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                },
+                body: JSON.stringify({
+                    IdProducto: productoId,
+                    IdTienda: tiendaId,
+                    Cantidad: cantidad
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.querySelector('#stockToast .toast-body').textContent =
+                        cantidad > 0 ? "Stock incrementado correctamente." : "Stock decrementado correctamente.";
+                    document.getElementById('stockToast').classList.remove('bg-danger');
+                    document.getElementById('stockToast').classList.add('bg-success');
+                    toast.show();
+
+                    // Recargar los productos para reflejar el cambio
+                    idTiendaSelect.dispatchEvent(new Event('change'));
+                } else {
+                    document.getElementById('stockToast').classList.remove('bg-success');
+                    document.getElementById('stockToast').classList.add('bg-danger');
+                    document.querySelector('#stockToast .toast-body').textContent = "Error al actualizar el stock.";
+                    toast.show();
+                }
+            });
+        }
+
+        // Configurar el botón de generar PDF
         generarPdfStockBtn.addEventListener('click', function() {
             const tiendaId = parseInt(idTiendaSelect.value);
             if (tiendaId !== 0) {
                 window.location.href = '/Reportes/GenerarPdfStock?idTienda=' + tiendaId;
             }
         });
+
+        // Configurar botones iniciales
+        configurarBotonesStock();
     });
 </script>

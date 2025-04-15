@@ -1,26 +1,111 @@
 ﻿@model IEnumerable<AppGestionStock.Models.VistaProductoTienda>
+@{
+    var idTienda = Context.Request.Query["idTienda"].ToString();
+    int tiendaId = 0;
+    int.TryParse(idTienda, out tiendaId);
+}
 
-<div id="productosContainer" class="row">
-    @foreach (var item in Model)
+@if (tiendaId == 0)
+{
+    <!-- Vista agrupada por IdProducto para "Todas las tiendas" -->
+    @foreach (var grupo in Model.GroupBy(p => p.IdProducto))
     {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <img src="~/images/Productos/@item.Imagen" class="card-img-top" alt="@item.Nombre" style="max-height: 200px; object-fit: contain;">
-                    <div class="card-body">
-                        <h5 class="card-title">@item.Nombre</h5>
-                        <p class="card-text">
-                            <strong>Precio:</strong> @item.Precio<br />
-                            <strong>Coste:</strong> @item.Coste<br />
-                            <strong>Categoría:</strong> @item.IdCategoria<br />
-                            <strong>Stock:</strong> @item.StockTienda <br />
-                            <strong>Tienda:</strong> @item.IdTienda
-                        </p>
-                        <div class="d-flex justify-content-between">
-                            <a asp-action="UpdateProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-sm btn-primary"><i data-lucide="pencil"></i></a>
-                            <a asp-action="EliminarProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-sm btn-danger"><i data-lucide="trash-2"></i></a>
+        var producto = grupo.First();
+        var stockTotal = grupo.Sum(p => p.StockTienda);
+        var tiendas = string.Join(", ", grupo.Select(p => p.IdTienda).Distinct());
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 producto-card">
+                <div class="position-relative">
+                    <img src="~/images/Productos/@producto.Imagen" class="card-img-top p-3" alt="@producto.Nombre" style="height: 200px; object-fit: contain;">
+                    <span class="position-absolute top-0 end-0 m-2 badge bg-primary rounded-pill">@stockTotal</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">@producto.Nombre</h5>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <span class="text-muted small">Precio:</span>
+                            <p class="mb-0 fw-bold text-primary">€@producto.Precio</p>
                         </div>
+                        <div class="col-6">
+                            <span class="text-muted small">Coste:</span>
+                            <p class="mb-0 fw-bold text-secondary">€@producto.Coste</p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small">Categoría:</span>
+                        <p class="mb-0">@producto.IdCategoria</p>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small">Tiendas:</span>
+                        <p class="mb-0">@tiendas</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="UpdateProducto" asp-route-idProducto="@producto.IdProducto" class="btn btn-outline-primary">
+                            <i data-lucide="pencil"></i>
+                        </a>
+                        <a asp-action="EliminarProducto" asp-route-idProducto="@producto.IdProducto" class="btn btn-outline-danger">
+                            <i data-lucide="trash-2"></i>
+                        </a>
                     </div>
                 </div>
             </div>
+        </div>
     }
-</div>
+}
+else
+{
+    <!-- Vista para una tienda específica -->
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 producto-card">
+                <div class="position-relative">
+                    <img src="~/images/Productos/@item.Imagen" class="card-img-top p-3" alt="@item.Nombre" style="height: 200px; object-fit: contain;">
+                    <span class="position-absolute top-0 end-0 m-2 badge bg-primary rounded-pill">@item.StockTienda</span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">@item.Nombre</h5>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <span class="text-muted small">Precio:</span>
+                            <p class="mb-0 fw-bold text-primary">€@item.Precio</p>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small">Coste:</span>
+                            <p class="mb-0 fw-bold text-secondary">€@item.Coste</p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small">Categoría:</span>
+                        <p class="mb-0">@item.IdCategoria</p>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted small">Tienda:</span>
+                        <p class="mb-0">@item.IdTienda</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="UpdateProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-outline-primary">
+                            <i data-lucide="pencil"></i>
+                        </a>
+                        <div class="btn-group stock-controls">
+                            <button type="button" class="btn btn-outline-danger stock-btn minus-btn" data-producto-id="@item.IdProducto">
+                                <i data-lucide="minus"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-success stock-btn plus-btn" data-producto-id="@item.IdProducto">
+                                <i data-lucide="plus"></i>
+                            </button>
+                        </div>
+                        <a asp-action="EliminarProducto" asp-route-idProducto="@item.IdProducto" class="btn btn-outline-danger">
+                            <i data-lucide="trash-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -3,6 +3,7 @@ using iTextSharp.text.pdf;
 using iTextSharp.text;
 using Microsoft.AspNetCore.Mvc;
 using AppGestionStock.Services;
+using static AppGestionStock.Services.ServiceAlmacenes;
 
 namespace AppGestionStock.Controllers
 {
@@ -15,10 +16,10 @@ namespace AppGestionStock.Controllers
             this.service = service;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 15)
         {
-            List<VistaInventarioDetalladoVenta> movimientos = await this.service.GetMovimientosAsync();
-            return View(movimientos);
+            PagedResult<VistaInventarioDetalladoVenta> resultado = await this.service.GetMovimientosPaginadosAsync(pageNumber, pageSize);
+            return View(resultado);
         }
 
         public async Task<IActionResult> GenerarPdf(string periodo)
