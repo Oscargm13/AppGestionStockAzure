@@ -110,11 +110,9 @@ namespace AppGestionStock.Controllers
 {
     public class InventarioController : Controller
     {
-        private RepositoryAlmacen repo;
         private ServiceAlmacenes service;
-        public InventarioController(RepositoryAlmacen repo, ServiceAlmacenes service)
+        public InventarioController(ServiceAlmacenes service)
         {
-            this.repo = repo;
             this.service = service;
         }
         public async Task<IActionResult> Index()
@@ -227,62 +225,70 @@ namespace AppGestionStock.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Compra(DateTime fechaCompra, int idProveedor, int idTienda,
-            List<int> idProducto, List<int> cantidad, List<decimal> precioUnidad)
+        public async Task<IActionResult> Compra(
+    DateTime fechaCompra,
+    int idProveedor,
+    int idTienda,
+    List<int> idProducto,
+    List<int> cantidad,
+    List<decimal> precioUnidad)
         {
             try
             {
-                decimal importe = 0;
-                if (cantidad != null && precioUnidad != null && idProducto != null &&
-                    cantidad.Count == precioUnidad.Count && cantidad.Count == idProducto.Count &&
-                    cantidad.Count > 0)
-                {
-                    for (int i = 0; i < cantidad.Count; i++)
-                    {
-                        importe += precioUnidad[i] * cantidad[i];
-                    }
-                }
-                else
+                // 🔧 FIX TEMPORAL si los valores llegan mal
+                // precioUnidad = precioUnidad.Select(p => p / 10).ToList();
+
+                // Validaciones básicas
+                if (cantidad == null || precioUnidad == null || idProducto == null ||
+                    cantidad.Count != precioUnidad.Count || cantidad.Count != idProducto.Count || cantidad.Count == 0)
                 {
                     return BadRequest("Las listas de cantidad, precioUnidad o idProducto son inválidas.");
                 }
 
-                // 1. Crear el objeto Compra
-                var compra = new Compra
+                // Calcular importe total
+                decimal importe = 0;
+                for (int i = 0; i < cantidad.Count; i++)
+                {
+                    importe += precioUnidad[i] / 10 * cantidad[i];
+                }
+
+                // Obtener el usuario de sesión
+                var usuario = HttpContext.Session.GetObject<Usuario>("USUARIO");
+
+                // Crear DTO con los datos de la compra
+                var compraDto = new CompraConDetallesDto
                 {
                     FechaCompra = fechaCompra,
                     IdProveedor = idProveedor,
                     IdTienda = idTienda,
-                    IdUsuario = HttpContext.Session.GetObject<Usuario>("USUARIO").IdUsuario, // Obtener el usuario de la sesión
-                    ImporteTotal = importe
+                    ImporteTotal = importe,
+                    IdUsuario = usuario.IdUsuario,
+                    Detalles = new List<DetalleCompraDto>()
                 };
 
-                // 2. Crear la lista de DetallesCompra
-                var detallesCompra = new List<DetallesCompra>();
                 for (int i = 0; i < idProducto.Count; i++)
                 {
-                    detallesCompra.Add(new DetallesCompra
+                    compraDto.Detalles.Add(new DetalleCompraDto
                     {
                         IdProducto = idProducto[i],
                         Cantidad = cantidad[i],
-                        PrecioUnidad = precioUnidad[i]
+                        PrecioUnidad = precioUnidad[i] / 10
                     });
                 }
 
+                // Llamar al servicio (API)
+                await this.service.ProcesarCompraAsync(compraDto);
 
-                // 3. Llamar al repositorio para procesar la compra
-                await repo.ProcesarCompra(compra, detallesCompra);
                 ViewData["MensajeExito"] = "Compra registrada con éxito";
-
-                // 4. Retornar una respuesta exitosa
                 return RedirectToAction("Index", "Home");
             }
             catch (Exception ex)
             {
-                // 5. Manejar errores
                 return BadRequest($"Error al procesar la compra: {ex.Message}");
             }
         }
+
+
         public IActionResult GetProductosProveedor(int proveedorId)
         {
             var productosTask = this.service.GetProductosProveedorAsync(proveedorId);

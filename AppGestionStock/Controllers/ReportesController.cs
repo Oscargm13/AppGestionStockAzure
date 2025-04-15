@@ -6,21 +6,22 @@ using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using AppGestionStock.Repositories;
 using System;
+using AppGestionStock.Services;
 
 namespace AppGestionStock.Controllers
 {
     public class ReportesController : Controller
     {
-        private readonly RepositoryAlmacen repo;
+        private ServiceAlmacenes service;
 
-        public ReportesController(RepositoryAlmacen repo)
+        public ReportesController(ServiceAlmacenes service)
         {
-            this.repo = repo;
+            this.service = service;
         }
 
         public async Task<IActionResult> Index()
         {
-            List<VistaInventarioDetalladoVenta> movimientos = await repo.GetMovimientos();
+            List<VistaInventarioDetalladoVenta> movimientos = await this.service.GetMovimientosAsync();
             return View(movimientos);
         }
 
@@ -43,7 +44,7 @@ namespace AppGestionStock.Controllers
             }
 
             // Obtener los movimientos dentro del rango de fechas
-            List<VistaInventarioDetalladoVenta> movimientos = await repo.GetMovimientos();
+            List<VistaInventarioDetalladoVenta> movimientos = await this.service.GetMovimientosAsync();
             movimientos = movimientos
                 .Where(m => m.FechaMovimiento >= fechaInicio)
                 .ToList();
@@ -130,9 +131,9 @@ namespace AppGestionStock.Controllers
                 return ms.ToArray();
             }
         }
-        public IActionResult GenerarPdfStock(int idTienda)
+        public async Task<IActionResult> GenerarPdfStock(int idTienda)
         {
-            List<VistaProductoTienda> productos = this.repo.GetVistaProductosTienda(idTienda);
+            List<VistaProductoTienda> productos = await this.service.GetVistaProductosTiendaAsync(idTienda);
 
             if (productos == null || productos.Count == 0)
             {

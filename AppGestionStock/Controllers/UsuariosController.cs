@@ -3,8 +3,6 @@ using AppGestionStock.Models;
 using AppGestionStock.Repositories;
 using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
-using NuGet.Protocol.Core.Types;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AppGestionStock.Controllers
 {

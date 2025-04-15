@@ -499,22 +499,5 @@ namespace AppGestionStock.Services
         {
             return await this.GetAsync<DetallesVenta>($"api/inventario/detallesventa/{idDetallesVenta}");
         }
-
-        public class CompraConDetallesDto
-        {
-            public DateTime FechaCompra { get; set; }
-            public int IdProveedor { get; set; }
-            public int IdTienda { get; set; }
-            public decimal ImporteTotal { get; set; }
-            public int IdUsuario { get; set; }
-            public List<DetalleCompraDto> Detalles { get; set; }
-        }
-
-        public class DetalleCompraDto
-        {
-            public int IdProducto { get; set; }
-            public int Cantidad { get; set; }
-            public decimal PrecioUnidad { get; set; }
-        }
     }
 }
