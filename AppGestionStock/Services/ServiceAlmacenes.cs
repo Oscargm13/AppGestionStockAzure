@@ -4,6 +4,7 @@ using AppGestionStock.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 
 namespace AppGestionStock.Services
 {
@@ -15,21 +16,27 @@ namespace AppGestionStock.Services
 
         public ServiceAlmacenes(IConfiguration configuration, IHttpContextAccessor contextAccessor)
         {
-            this.header = new MediaTypeWithQualityHeaderValue("application/json");
             this.UrlApi = configuration.GetValue<string>("ApiUrls:ApiAlmacenes");
+            this.header = new MediaTypeWithQualityHeaderValue("application/json");
             this.contextAccessor = contextAccessor;
         }
 
         // ========================
         // MÉTODOS GENERALES HTTP
         // ========================
-        private async Task<T> SendRequestAsync<T>(string request, HttpMethod method, object data = null)
+        private async Task<T> SendRequestAsync<T>(string request, HttpMethod method, object data = null, string token = null)
         {
             using (HttpClient client = new HttpClient())
             {
                 client.BaseAddress = new Uri(this.UrlApi);
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Accept.Add(this.header);
+
+                // 👉 Añadir el token si se proporciona
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
 
                 HttpRequestMessage httpRequest = new HttpRequestMessage(method, request);
 
@@ -63,8 +70,9 @@ namespace AppGestionStock.Services
             }
         }
 
-        private async Task<T> GetAsync<T>(string request) =>
-            await this.SendRequestAsync<T>(request, HttpMethod.Get);
+        private async Task<T> GetAsync<T>(string request, string token = null) => 
+            await this.SendRequestAsync<T>(request, HttpMethod.Get, null, token);
+
 
         private async Task PostAsync<T>(string request, T data) =>
             await this.SendRequestAsync<string>(request, HttpMethod.Post, data);
@@ -104,7 +112,10 @@ namespace AppGestionStock.Services
                     string token = keys.GetValue("response").ToString();
                     return token;
                 }
-                return null;
+                else
+                {
+                    return null;
+                }  
             }
         }
 
@@ -114,9 +125,13 @@ namespace AppGestionStock.Services
         public async Task<List<Cliente>> GetClientesAsync() =>
             await this.GetAsync<List<Cliente>>("api/clientes");
 
-        public async Task<Cliente> FindClienteAsync(int id) =>
-            await this.GetAsync<Cliente>($"api/clientes/{id}");
-
+        public async Task<Cliente> FindClienteAsync(int id, string token)
+        {
+            string request = "api/clientes/" + id;
+            Cliente cliente = await this.GetAsync<Cliente>(request, token);
+            return cliente;
+        }
+        
         public async Task CreateClienteAsync(Cliente cliente) =>
             await this.PostAsync("api/clientes", cliente);
 
@@ -282,6 +297,11 @@ namespace AppGestionStock.Services
         public async Task<Usuario> FindUsuarioAsync(int id)
         {
             return await this.GetAsync<Usuario>($"api/usuario/{id}");
+        }
+
+        public async Task<Usuario> FindUsuarioEmailAsync(string email)
+        {
+            return await this.GetAsync<Usuario>($"api/usuario/email/{email}");
         }
 
         public async Task<List<Rol>> GetRolesAsync()

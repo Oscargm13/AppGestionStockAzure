@@ -43,12 +43,18 @@ namespace AppGestionStock.Controllers
         //[AuthorizeUsuarios]
         public async Task<IActionResult> Edit(int id)
         {
-            Cliente cliente = await this.service.FindClienteAsync(id);
-            if (cliente == null)
+            string token = HttpContext.Session.GetString("TOKEN");
+            if(token == null)
             {
-                return NotFound();
+                ViewData["MENSAJE"] = "Debe validarse en Login";
+                return View();
             }
-            return View(cliente);
+            else
+            {
+                Cliente cliente = await this.service.FindClienteAsync(id, token);
+                return View(cliente);
+            }
+            
         }
 
         [HttpPost]

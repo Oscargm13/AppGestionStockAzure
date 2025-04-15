@@ -29,22 +29,39 @@ namespace AppGestionStock.Controllers
         [HttpPost]
         public async Task<IActionResult> LogIn(string email, string pass)
         {
-            string token = await service.GetTokenAsync(email, pass);
-            Usuario usuario = await repo.CompararUsuario(email, pass);
-            if (token != null)
+            try
             {
-                HttpContext.Session.SetObject("TOKEN", token);
-                HttpContext.Session.SetObject("USUARIO", usuario);
-                HttpContext.Session.SetObject("EMAIL", usuario.Email);
-                HttpContext.Session.SetObject("IDUSUARIO", usuario.IdUsuario);
+                // Obtenemos el token de la API
+                string token = await service.GetTokenAsync(email, pass);
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    ViewData["MensajeError"] = "Nombre de usuario o contraseña incorrectos.";
+                    return View();
+                }
+
+                // Guardamos en sesión el token plano (sin serializar)
+                HttpContext.Session.SetString("TOKEN", token);
+
+                // Obtenemos datos del usuario
+                Usuario usuario = await this.service.FindUsuarioEmailAsync(email);
+
+                // Guardamos solo lo necesario (evita duplicidad de info)
+                HttpContext.Session.SetInt32("IDUSUARIO", usuario.IdUsuario);
+                HttpContext.Session.SetString("EMAIL", usuario.Email);
+                HttpContext.Session.SetString("NOMBRE", usuario.Nombre);
+                HttpContext.Session.SetObject("USUARIO", usuario); // solo si luego lo usás completo
 
                 return RedirectToAction("Index", "Home");
             }
-
-
-            ViewData["MensajeError"] = "Nombre de usuario o contraseña incorrectos.";
-            return View();
+            catch (Exception ex)
+            {
+                // 👀 Buen lugar para loguear
+                ViewData["MensajeError"] = "Error al iniciar sesión. Inténtalo de nuevo.";
+                return View();
+            }
         }
+
 
         //[HttpPost]
         //public async Task<IActionResult> LogIn(string email, string pass)
