@@ -131,9 +131,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    function parsePrecio(valor) {
+        if (!valor) return 0;
+        let normalizado = valor.toString().replace(",", ".").trim();
+        let numero = parseFloat(normalizado);
+        return isNaN(numero) ? 0 : parseFloat(numero.toFixed(2));
+    }
+
+
+
     let detalles = []; // Lista para almacenar los detalles de venta
 
-    document.getElementById('idProducto').addEventListener('change', function() {
+    document.getElementById('idProducto').addEventListener('change', function () {
         let selectedOption = this.options[this.selectedIndex];
         let precio = parseFloat(selectedOption.getAttribute('data-precio'));
         let stock = parseInt(selectedOption.getAttribute('data-stock'));
@@ -144,12 +153,12 @@
         } else {
             document.getElementById('precioUnidad').value = '';
         }
-
+        console.log("precio unidad: "+ precio);
         if (!isNaN(stock)) {
             stockDisplay.textContent = `Stock disponible: ${stock} unidades`;
             stockDisplay.style.display = 'inline-block';
             document.getElementById('cantidad').max = stock;
-            document.getElementById('cantidad').value = 1; // Valor predeterminado
+            document.getElementById('cantidad').value = 1;
         } else {
             stockDisplay.style.display = 'none';
             document.getElementById('cantidad').max = '';
@@ -157,7 +166,7 @@
         }
     });
 
-    document.getElementById('cantidad').addEventListener('input', function() {
+    document.getElementById('cantidad').addEventListener('input', function () {
         let stock = parseInt(document.getElementById('idProducto').options[document.getElementById('idProducto').selectedIndex].getAttribute('data-stock'));
         if (parseInt(this.value) > stock) {
             this.value = stock;
@@ -166,33 +175,28 @@
         }
     });
 
-    document.getElementById('agregarProducto').addEventListener('click', function() {
-        // Obtener los valores del detalle actual
+    document.getElementById('agregarProducto').addEventListener('click', function () {
         let productoSelect = document.getElementById('idProducto');
         let idProducto = productoSelect.value;
         let nombreProducto = productoSelect.options[productoSelect.selectedIndex].text;
         let cantidad = document.getElementById('cantidad').value;
-        let precioUnidad = document.getElementById('precioUnidad').value;
+        let precioUnidad = parsePrecio(document.getElementById('precioUnidad').value).toFixed(2);
 
-        // Validar que se hayan ingresado los datos necesarios
-        if (!idProducto || !cantidad || !precioUnidad) {
+        if (!idProducto || !cantidad || isNaN(precioUnidad)) {
             alert('Por favor complete todos los campos del producto');
             return;
         }
 
-        // Agregar el detalle a la lista
         detalles.push({
             IdProducto: idProducto,
             Nombre: nombreProducto,
             Cantidad: cantidad,
             PrecioUnidad: precioUnidad,
-            Total: (parseFloat(cantidad) * parseFloat(precioUnidad)).toFixed(2)
+            Total: (parseFloat(cantidad) * precioUnidad).toFixed(2)
         });
 
-        // Actualizar la lista visual de productos
         actualizarListaProductos();
 
-        // Limpiar el detalle actual
         productoSelect.value = '';
         document.getElementById('cantidad').value = '';
         document.getElementById('precioUnidad').value = '';
@@ -205,15 +209,11 @@
 
         if (detalles.length > 0) {
             productosDiv.style.display = 'block';
-
-            // Limpiar lista actual
             listaDiv.innerHTML = '';
 
-            // Crear tabla de productos
             let tabla = document.createElement('table');
             tabla.className = 'table table-sm table-hover';
 
-            // Cabecera de tabla
             let thead = document.createElement('thead');
             thead.innerHTML = `
                 <tr class="bg-light">
@@ -221,33 +221,28 @@
                     <th>Cantidad</th>
                     <th>Precio Unit.</th>
                     <th>Total</th>
-                </tr>
-            `;
+                </tr>`;
             tabla.appendChild(thead);
 
-            // Cuerpo de tabla
             let tbody = document.createElement('tbody');
             let totalGeneral = 0;
 
-            detalles.forEach((detalle, index) => {
+            detalles.forEach(detalle => {
                 let tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${detalle.Nombre}</td>
                     <td>${detalle.Cantidad}</td>
                     <td>$${parseFloat(detalle.PrecioUnidad).toFixed(2)}</td>
-                    <td>$${detalle.Total}</td>
-                `;
+                    <td>$${detalle.Total}</td>`;
                 tbody.appendChild(tr);
                 totalGeneral += parseFloat(detalle.Total);
             });
 
-            // Añadir fila de total
             let trTotal = document.createElement('tr');
             trTotal.className = 'font-weight-bold';
             trTotal.innerHTML = `
                 <td colspan="3" class="text-right">Total:</td>
-                <td>$${totalGeneral.toFixed(2)}</td>
-            `;
+                <td>$${totalGeneral.toFixed(2)}</td>`;
             tbody.appendChild(trTotal);
 
             tabla.appendChild(tbody);
@@ -257,16 +252,15 @@
         }
     }
 
-        document.getElementById('registrarVenta').addEventListener('click', function(event) {
-        event.preventDefault(); // Prevenir envío del formulario
+    document.getElementById('registrarVenta').addEventListener('click', function (event) {
+        event.preventDefault();
 
-        // Verificar si hay un producto pendiente por agregar
         let idProducto = document.getElementById('idProducto').value;
         let cantidad = document.getElementById('cantidad').value;
-        let precioUnidad = document.getElementById('precioUnidad').value;
+        let precioUnidad = parsePrecio(document.getElementById('precioUnidad').value).toFixed(2);
+        console.log("aaa" + precioUnidad);
 
-        if (idProducto && cantidad && precioUnidad) {
-            // Hay un producto pendiente de agregar
+        if (idProducto && cantidad && !isNaN(precioUnidad)) {
             let productoSelect = document.getElementById('idProducto');
             let nombreProducto = productoSelect.options[productoSelect.selectedIndex].text;
 
@@ -275,7 +269,7 @@
                 Nombre: nombreProducto,
                 Cantidad: cantidad,
                 PrecioUnidad: precioUnidad,
-                Total: (parseFloat(cantidad) * parseFloat(precioUnidad)).toFixed(2)
+                Total: (parseFloat(cantidad) * precioUnidad)
             });
         }
 
@@ -289,7 +283,6 @@
             return;
         }
 
-        // Construir la tabla para el SweetAlert
         let tablaHTML = `
             <table class="table table-bordered mt-3">
                 <thead class="bg-light">
@@ -300,8 +293,7 @@
                         <th>Total</th>
                     </tr>
                 </thead>
-                <tbody>
-        `;
+                <tbody>`;
 
         let totalGeneral = 0;
         detalles.forEach(detalle => {
@@ -314,8 +306,7 @@
                     <td>${detalle.Cantidad}</td>
                     <td>$${parseFloat(detalle.PrecioUnidad).toFixed(2)}</td>
                     <td>$${subtotal.toFixed(2)}</td>
-                </tr>
-            `;
+                </tr>`;
         });
 
         tablaHTML += `
@@ -326,16 +317,13 @@
                         <td class="font-weight-bold">$${totalGeneral.toFixed(2)}</td>
                     </tr>
                 </tfoot>
-            </table>
-        `;
+            </table>`;
 
-        // Información de la venta
         const fechaVenta = document.querySelector('[name="FechaVenta"]').value;
         const tiendaSelect = document.querySelector('[name="IdTienda"]');
         const tiendaNombre = tiendaSelect.options[tiendaSelect.selectedIndex].text;
         const idCliente = document.querySelector('[name="IdCliente"]').value;
 
-        // Mostrar SweetAlert con la información de la venta
         Swal.fire({
             title: 'Confirmar Venta',
             html: `
@@ -345,8 +333,7 @@
                     <p><strong>Cliente:</strong> ${idCliente}</p>
                     <h5 class="mt-4 mb-2">Detalle de Productos</h5>
                     ${tablaHTML}
-                </div>
-            `,
+                </div>`,
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#0066cc',
@@ -356,31 +343,28 @@
             width: '600px'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Proceder con el envío del formulario
                 const form = document.getElementById('ventaForm');
 
-                // Agregar los detalles almacenados al formulario
                 detalles.forEach((detalle, index) => {
-                    let idProductoInput = document.createElement('input');
+                    const idProductoInput = document.createElement('input');
                     idProductoInput.type = 'hidden';
                     idProductoInput.name = `idProducto[${index}]`;
                     idProductoInput.value = detalle.IdProducto;
                     form.appendChild(idProductoInput);
 
-                    let cantidadInput = document.createElement('input');
+                    const cantidadInput = document.createElement('input');
                     cantidadInput.type = 'hidden';
                     cantidadInput.name = `cantidad[${index}]`;
                     cantidadInput.value = detalle.Cantidad;
                     form.appendChild(cantidadInput);
 
-                    let precioUnidadInput = document.createElement('input');
+                    const precioUnidadInput = document.createElement('input');
                     precioUnidadInput.type = 'hidden';
                     precioUnidadInput.name = `precioUnidad[${index}]`;
-                    precioUnidadInput.value = detalle.PrecioUnidad;
+                    precioUnidadInput.value = parsePrecio(detalle.PrecioUnidad);
                     form.appendChild(precioUnidadInput);
                 });
 
-                // Mostrar mensaje de procesamiento
                 Swal.fire({
                     title: 'Procesando',
                     text: 'Registrando su venta...',
@@ -396,8 +380,7 @@
         });
     });
 
-    document.getElementById('ventaForm').addEventListener('submit', function(event) {
-        // Si estamos en el paso 2 y no hay detalles, evitar el envío
+    document.getElementById('ventaForm').addEventListener('submit', function (event) {
         if (document.getElementById('paso2').style.display === 'block' && detalles.length === 0) {
             let idProducto = document.getElementById('idProducto').value;
             if (!idProducto) {
@@ -406,30 +389,28 @@
                 return;
             }
         }
-
-        // Agregar los detalles almacenados al formulario antes de enviarlo
+        console.log("bbb" + detalle.PrecioUnidad);
         detalles.forEach((detalle, index) => {
-            let idProductoInput = document.createElement('input');
+            const idProductoInput = document.createElement('input');
             idProductoInput.type = 'hidden';
             idProductoInput.name = `idProducto[${index}]`;
             idProductoInput.value = detalle.IdProducto;
             this.appendChild(idProductoInput);
 
-            let cantidadInput = document.createElement('input');
+            const cantidadInput = document.createElement('input');
             cantidadInput.type = 'hidden';
             cantidadInput.name = `cantidad[${index}]`;
             cantidadInput.value = detalle.Cantidad;
             this.appendChild(cantidadInput);
 
-            let precioUnidadInput = document.createElement('input');
+            const precioUnidadInput = document.createElement('input');
             precioUnidadInput.type = 'hidden';
             precioUnidadInput.name = `precioUnidad[${index}]`;
-            precioUnidadInput.value = parseFloat(detalle.PrecioUnidad).toFixed(2);
+            precioUnidadInput.value = parsePrecio(detalle.PrecioUnidad);
             this.appendChild(precioUnidadInput);
         });
     });
 
-    // Inicialización condicional - mostrar el paso 2 si ya pasamos del paso 1
     if (document.getElementById('idProducto') && document.getElementById('idProducto').options.length > 1) {
         document.getElementById('paso1').style.display = 'none';
         document.getElementById('paso2').style.display = 'block';

@@ -157,11 +157,12 @@ namespace AppGestionStock.Controllers
 
             // Calcular importe total
             decimal importe = 0;
+            //precioUnidad = precioUnidad/10.00;
             for (int i = 0; i < cantidad.Count; i++)
             {
-                importe += precioUnidad[i] * cantidad[i];
+                importe += (precioUnidad[i] / 10) * cantidad[i];
             }
-
+            //precioUnidad = precioUnidad.Select(p => p / 10).ToList();
             // Obtener el usuario logueado
             Usuario usuario = HttpContext.Session.GetObject<Usuario>("USUARIO");
 
@@ -182,7 +183,7 @@ namespace AppGestionStock.Controllers
                 {
                     IdProducto = idProducto[i],
                     Cantidad = cantidad[i],
-                    PrecioUnidad = precioUnidad[i]
+                    PrecioUnidad = precioUnidad[i] / 10
                 });
             }
 
