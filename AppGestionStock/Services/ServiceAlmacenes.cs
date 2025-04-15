@@ -1,10 +1,8 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using AppGestionStock.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Common;
 
 namespace AppGestionStock.Services
 {
@@ -12,13 +10,13 @@ namespace AppGestionStock.Services
     {
         private string UrlApi;
         private MediaTypeWithQualityHeaderValue header;
-        private IHttpContextAccessor contextAccessor;
+        //private IHttpContextAccessor contextAccessor;
 
         public ServiceAlmacenes(IConfiguration configuration, IHttpContextAccessor contextAccessor)
         {
             this.UrlApi = configuration.GetValue<string>("ApiUrls:ApiAlmacenes");
             this.header = new MediaTypeWithQualityHeaderValue("application/json");
-            this.contextAccessor = contextAccessor;
+            //this.contextAccessor = contextAccessor;
         }
 
         // ========================

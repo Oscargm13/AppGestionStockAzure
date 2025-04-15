@@ -1,5 +1,4 @@
 ﻿using AppGestionStock.Models;
-using AppGestionStock.Repositories;
 using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
 

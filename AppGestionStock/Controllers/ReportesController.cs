@@ -1,11 +1,7 @@
 ﻿using AppGestionStock.Models;
 using iTextSharp.text.pdf;
 using iTextSharp.text;
-using System.Collections.Generic;
-using System.IO;
 using Microsoft.AspNetCore.Mvc;
-using AppGestionStock.Repositories;
-using System;
 using AppGestionStock.Services;
 
 namespace AppGestionStock.Controllers

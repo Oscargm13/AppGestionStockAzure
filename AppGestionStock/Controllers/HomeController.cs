@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using AppGestionStock.Extensions;
 using AppGestionStock.Models;
-using AppGestionStock.Repositories;
 using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,12 +8,10 @@ namespace AppGestionStock.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private ServiceAlmacenes service;
 
         public HomeController(ILogger<HomeController> logger, ServiceAlmacenes service)
         {
-            _logger = logger;
             this.service = service;
         }
 

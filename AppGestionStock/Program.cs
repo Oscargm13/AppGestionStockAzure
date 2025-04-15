@@ -1,6 +1,4 @@
-using AppGestionStock.Data;
 using AppGestionStock.Middlewares;
-using AppGestionStock.Repositories;
 using AppGestionStock.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -21,11 +19,8 @@ builder.Services.AddAuthentication(options =>
     options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 }).AddCookie();
 
-builder.Services.AddTransient<RepositoryAlmacen>();
 builder.Services.AddTransient<ServiceAlmacenes>();
 string connectionString = builder.Configuration.GetConnectionString("SqlAzure");
-//builder.Services.AddDbContext<AlmacenesContext>(options => options.UseSqlServer(connectionString));
-builder.Services.AddDbContext<AlmacenesContext>(options => options.UseSqlServer(connectionString), ServiceLifetime.Scoped);
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

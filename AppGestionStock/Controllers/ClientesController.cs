@@ -1,6 +1,5 @@
 ﻿using AppGestionStock.Filters;
 using AppGestionStock.Models;
-using AppGestionStock.Repositories;
 using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +9,7 @@ namespace AppGestionStock.Controllers
     {
         private ServiceAlmacenes service;
 
-        public ClientesController(RepositoryAlmacen repo, ServiceAlmacenes service)
+        public ClientesController(ServiceAlmacenes service)
         {
             this.service = service;
         }
