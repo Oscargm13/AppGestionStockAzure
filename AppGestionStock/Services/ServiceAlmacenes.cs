@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
+using AppGestionStock.DTOs;
 using AppGestionStock.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -240,27 +241,9 @@ namespace AppGestionStock.Services
             return await this.GetAsync<VistaProductoTienda>($"api/productos/tienda/{idTienda}/producto/{idProducto}");
         }
 
-        public async Task CreateProductoAsync(Producto producto, string? nombreCategoria, int? idCategoriaPadre)
+        public async Task CreateProductoAsync(CrearProductoDto dto)
         {
-            var query = new StringBuilder("api/productos");
-
-            // Agregamos los query params si están definidos
-            var queryParams = new List<string>();
-            if (!string.IsNullOrWhiteSpace(nombreCategoria))
-            {
-                queryParams.Add($"nombreCategoria={Uri.EscapeDataString(nombreCategoria)}");
-            }
-            if (idCategoriaPadre.HasValue)
-            {
-                queryParams.Add($"idCategoriaPadre={idCategoriaPadre.Value}");
-            }
-
-            if (queryParams.Any())
-            {
-                query.Append("?").Append(string.Join("&", queryParams));
-            }
-
-            await this.PostAsync(query.ToString(), producto);
+            await this.PostAsync("api/productos", dto);
         }
 
         public async Task UpdateProductoAsync(int idProducto, Producto producto)

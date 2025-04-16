@@ -1,4 +1,5 @@
-﻿using AppGestionStock.Models;
+﻿using AppGestionStock.DTOs;
+using AppGestionStock.Models;
 using AppGestionStock.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -79,16 +80,20 @@ namespace AppGestionStock.Controllers
             return View(productos);
         }
 
+        [HttpGet]
         public async Task<IActionResult> CrearProducto()
         {
-            List<Categoria> categorias = await this.service.GetCategoriasAsync();
-            ViewData["CATEGORIAS"] = categorias;
-            return View();
+            ViewData["CATEGORIAS"] = await this.service.GetCategoriasAsync();
+            ViewData["TIENDAS"] = await this.service.GetTiendasAsync();
+            ViewData["PROVEEDORES"] = await this.service.GetProveedoresAsync();
+
+            return View(new Producto());
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearProducto(int? idCategoria, string nombre, decimal precio, decimal coste,
-            string? nombreCategoria, int? idCategoriaPadre, string imagen)
+        public async Task<IActionResult> CrearProducto(int? idCategoria, string nombre, decimal precio,
+            decimal coste, string? nombreCategoria, int? idCategoriaPadre, string imagen, int idProveedor,
+            List<int>? idsTiendas)
         {
             if (!idCategoria.HasValue && string.IsNullOrWhiteSpace(nombreCategoria))
             {
@@ -107,20 +112,23 @@ namespace AppGestionStock.Controllers
                 });
             }
 
-            var producto = new Producto
+            var dto = new CrearProductoDto
             {
-                IdCategoria = idCategoria ?? 0,
                 Nombre = nombre,
-                Precio = precio,
-                Coste = coste,
-                Imagen = imagen
+                Precio = precio / 100,
+                Coste = coste / 100,
+                Imagen = imagen,
+                IdCategoria = idCategoria,
+                NombreCategoria = nombreCategoria,
+                IdCategoriaPadre = idCategoriaPadre,
+                IdProveedor = idProveedor,
+                IdsTiendas = idsTiendas ?? new List<int>()
             };
 
-            await this.service.CreateProductoAsync(producto, nombreCategoria, idCategoriaPadre);
+            await this.service.CreateProductoAsync(dto);
 
             return RedirectToAction("Index");
         }
-
 
 
         public async Task<IActionResult> UpdateProducto(int idProducto)

@@ -1,3 +1,4 @@
+using System.Globalization;
 using AppGestionStock.Middlewares;
 using AppGestionStock.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -24,6 +25,11 @@ string connectionString = builder.Configuration.GetConnectionString("SqlAzure");
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+var defaultCulture = new CultureInfo("es-ES");
+CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
+CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

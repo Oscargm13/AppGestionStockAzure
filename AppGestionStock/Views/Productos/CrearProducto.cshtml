@@ -2,95 +2,282 @@
 
 @{
     List<Categoria> categorias = (List<Categoria>)ViewData["CATEGORIAS"];
+    List<Tienda> tiendas = (List<Tienda>)ViewData["TIENDAS"];
+    List<Proveedor> proveedores = (List<Proveedor>)ViewData["PROVEEDORES"];
 }
 
 @{
-    ViewData["Title"] = "CrearProducto";
+    ViewData["Title"] = "Crear Producto";
 }
 
-<div class="container mt-5">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h1 class="text-center">Crear Producto</h1>
-            <hr />
-            <form asp-action="CrearProducto">
-                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                <div class="form-group">
-                    <label asp-for="IdCategoria" class="control-label"></label>
-                    <select asp-for="IdCategoria" class="form-control"
-                            asp-items="@(new SelectList(categorias, "IdCategoria", "Nombre"))">
-                        <option value="">Seleccione una categoría</option>
-                    </select>
-                    <span asp-validation-for="IdCategoria" class="text-danger"></span>
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title mb-0 text-center fs-4">Crear Nuevo Producto</h2>
                 </div>
+                <div class="card-body p-4">
+                    <form asp-action="CrearProducto" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                <div class="form-group">
-                    <label asp-for="Nombre" class="control-label"></label>
-                    <input asp-for="Nombre" class="form-control" />
-                    <span asp-validation-for="Nombre" class="text-danger"></span>
-                </div>
+                        <!-- Sección de categoría -->
+                        <div class="card mb-4 bg-light">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Información de Categoría</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Seleccionar categoría existente -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Categoría existente</label>
+                                    <select name="idCategoria" id="idCategoria" class="form-select">
+                                        <option value="">Seleccione una categoría</option>
+                                        @foreach (var categoria in categorias)
+                                        {
+                                            <option value="@categoria.IdCategoria">@categoria.Nombre</option>
+                                        }
+                                    </select>
+                                </div>
 
-                <div class="form-group">
-                    <label asp-for="Precio" class="control-label"></label>
-                    <input asp-for="Precio" class="form-control" />
-                    <span asp-validation-for="Precio" class="text-danger"></span>
-                </div>
+                                <div id="nuevaCategoriaContainer" class="row">
+                                    <!-- Crear nueva categoría -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Nombre de nueva categoría</label>
+                                        <input name="nombreCategoria" id="nombreCategoria" class="form-control" placeholder="Ej: Electrónica" />
+                                    </div>
 
-                <div class="form-group">
-                    <label asp-for="Coste" class="control-label"></label>
-                    <input asp-for="Coste" class="form-control" />
-                    <span asp-validation-for="Coste" class="text-danger"></span>
-                </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Categoría padre</label>
+                                        <select name="idCategoriaPadre" id="idCategoriaPadre" class="form-select">
+                                            <option value="">Sin categoría padre</option>
+                                            @foreach (var categoria in categorias)
+                                            {
+                                                <option value="@categoria.IdCategoria">@categoria.Nombre</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="form-group">
-                    <label class="control-label">Nombre de la Categoría</label>
-                    <input name="nombreCategoria" class="form-control" />
-                </div>
+                        <!-- Sección de datos del producto -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Datos del Producto</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label asp-for="Nombre" class="form-label fw-bold"></label>
+                                    <input asp-for="Nombre" class="form-control" placeholder="Nombre del producto" />
+                                    <span asp-validation-for="Nombre" class="text-danger"></span>
+                                </div>
 
-                <div class="form-group">
-                    <label class="control-label">Categoría Padre</label>
-                    <select name="idCategoriaPadre" class="form-control">
-                        <option value="">Seleccionar Categoría Padre</option>
-                        @foreach (var categoria in categorias)
-                        {
-                            <option value="@categoria.IdCategoria">@categoria.Nombre</option>
-                        }
-                    </select>
-                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Precio" class="form-label fw-bold"></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">€</span>
+                                            <input asp-for="Precio" class="form-control" placeholder="0.00" />
+                                        </div>
+                                        <span asp-validation-for="Precio" class="text-danger"></span>
+                                    </div>
 
-                <div class="form-group">
-                    <label asp-for="Imagen" class="control-label"></label>
-                    <input asp-for="Imagen" class="form-control" />
-                    <span asp-validation-for="Imagen" class="text-danger"></span>
-                </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Coste" class="form-label fw-bold"></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">€</span>
+                                            <input asp-for="Coste" class="form-control" placeholder="0.00" />
+                                        </div>
+                                        <span asp-validation-for="Coste" class="text-danger"></span>
+                                    </div>
+                                </div>
 
-                <div class="form-group text-center">
-                    <input type="submit" value="Crear" class="btn btn-primary" />
+                                <div class="mb-3">
+                                    <label asp-for="Imagen" class="form-label fw-bold"></label>
+                                    <input asp-for="Imagen" class="form-control" placeholder="URL de la imagen" />
+                                    <span asp-validation-for="Imagen" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección de proveedor -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Proveedor</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Proveedor</label>
+                                    <select name="idProveedor" class="form-select">
+                                        <option value="">Seleccione un proveedor</option>
+                                        @foreach (var proveedor in proveedores)
+                                        {
+                                            <option value="@proveedor.IdProveedor">@proveedor.NombreEmpresa</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tiendas con diseño de tarjetas -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Tiendas Disponibles</h5>
+                                <small class="text-muted">Seleccione las tiendas donde estará disponible el producto</small>
+                            </div>
+                            <div class="card-body">
+                                <!-- Campo oculto para almacenar las tiendas seleccionadas -->
+                                <input type="hidden" id="idsTiendasHidden" name="idsTiendas" value="" />
+
+                                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3" id="tiendas-container">
+                                    @foreach (var tienda in tiendas)
+                                    {
+                                        <div class="col">
+                                            <div class="tienda-card card h-100" data-tienda-id="@tienda.IdTienda">
+                                                <div class="card-body d-flex flex-column">
+                                                    <h6 class="card-title">@tienda.Nombre</h6>
+                                                    <div class="mt-auto text-end">
+                                                        <div class="form-check form-switch d-inline-block">
+                                                            <input class="form-check-input tienda-checkbox"
+                                                                   type="checkbox"
+                                                                   role="switch"
+                                                                   id="tienda-@tienda.IdTienda"
+                                                                   value="@tienda.IdTienda">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver a la Lista
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Guardar Producto
+                            </button>
+                        </div>
+                    </form>
                 </div>
-            </form>
-            <div class="text-center mt-3">
-                <a asp-action="Index">Volver a la Lista</a>
             </div>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+<style>
+    /* Estilos para las tarjetas de tiendas */
+    .tienda-card {
+        transition: all 0.3s;
+        cursor: pointer;
+        border: 2px solid #e9ecef;
     }
+
+    .tienda-card.selected {
+        border-color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.05);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .tienda-card:hover:not(.selected) {
+        border-color: #adb5bd;
+        background-color: #f8f9fa;
+    }
+
+    /* Ajuste para los switches de Bootstrap */
+    .form-switch .form-check-input {
+        width: 2.5em;
+        height: 1.25em;
+    }
+    /* No mostrar el checkbox pero sí el switch */
+    .tienda-checkbox {
+        cursor: pointer;
+    }
+</style>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const idCategoria = document.querySelector("#IdCategoria");
-            const nombreCategoria = document.querySelector("input[name='nombreCategoria']");
+            const idCategoria = document.querySelector("#idCategoria");
+            const nombreCategoria = document.querySelector("#nombreCategoria");
+            const idCategoriaPadre = document.querySelector("#idCategoriaPadre");
+            const nuevaCategoriaContainer = document.querySelector("#nuevaCategoriaContainer");
             const form = document.querySelector("form");
+            const idsTiendasHidden = document.querySelector("#idsTiendasHidden");
+            const tiendaCards = document.querySelectorAll(".tienda-card");
 
+            // Función para manejar la visibilidad de campos de nueva categoría
+            function toggleNuevaCategoriaFields() {
+                if (idCategoria.value) {
+                    nuevaCategoriaContainer.style.display = 'none';
+                    nombreCategoria.value = '';
+                    idCategoriaPadre.value = '';
+                } else {
+                    nuevaCategoriaContainer.style.display = 'flex';
+                }
+            }
+
+            // Ejecutar al cargar la página
+            toggleNuevaCategoriaFields();
+
+            // Ejecutar cuando cambia la selección de categoría
+            idCategoria.addEventListener("change", toggleNuevaCategoriaFields);
+
+            // Manejar selección de tiendas
+            tiendaCards.forEach(card => {
+                card.addEventListener("click", function() {
+                    const tiendaId = this.getAttribute('data-tienda-id');
+                    const checkbox = this.querySelector('.tienda-checkbox');
+
+                    // Invertir el estado del checkbox
+                    checkbox.checked = !checkbox.checked;
+
+                    // Aplicar clase seleccionada
+                    if (checkbox.checked) {
+                        this.classList.add('selected');
+                    } else {
+                        this.classList.remove('selected');
+                    }
+
+                    // Actualizar campo oculto con todas las tiendas seleccionadas
+                    updateSelectedTiendas();
+                });
+            });
+
+            // Función para actualizar el campo oculto con las tiendas seleccionadas
+            function updateSelectedTiendas() {
+                const selectedTiendas = Array.from(document.querySelectorAll('.tienda-checkbox:checked'))
+                    .map(checkbox => checkbox.value);
+                idsTiendasHidden.value = selectedTiendas.join(',');
+            }
+
+            // Validación del formulario
             form.addEventListener("submit", function (e) {
                 if (!idCategoria.value && !nombreCategoria.value.trim()) {
                     e.preventDefault();
                     alert("Debe seleccionar una categoría existente o ingresar una nueva.");
                 }
+            });
+
+            // Permitir clic directo en checkbox sin activar toda la tarjeta
+            document.querySelectorAll('.tienda-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const card = this.closest('.tienda-card');
+
+                    if (this.checked) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
+
+                    updateSelectedTiendas();
+                });
             });
         });
     </script>

@@ -1,21 +1,28 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
 }
 @model ProductosTienda
 <link rel="stylesheet" href="~/css/estilosHome.css" asp-append-version="true" />
 
 <div class="container">
+    <!-- Encabezado de bienvenida -->
+    <div class="welcome-header mb-4">
+        <h2 class="welcome-title">Bienvenido de vuelta</h2>
+        <p class="text-muted">Resumen de actividad reciente de tu negocio</p>
+    </div>
+
+    <!-- Tarjetas de estadísticas -->
     <div class="card-row">
-        <div class="earnings-card" style="border-left: 7px solid #D3D3D3;">
+        <div class="earnings-card" style="border-left: 7px solid #6c757d;">
             <div class="earnings-content">
                 <div class="earnings-title">Clientes actuales</div>
                 <div class="earnings-amount">@ViewData["NUMEROCLIENTES"]</div>
             </div>
             <div class="earnings-icon">
-                <i data-lucide="user-plus"></i>
+                <i data-lucide="users"></i>
             </div>
         </div>
-        <div class="earnings-card" style="border-left: 7px solid #A0522D;">
+        <div class="earnings-card" style="border-left: 7px solid #8B4513;">
             <div class="earnings-content">
                 <div class="earnings-title">Stock total</div>
                 <div class="earnings-amount">@ViewData["STOCKTOTAL"]</div>
@@ -24,9 +31,9 @@
                 <i data-lucide="package"></i>
             </div>
         </div>
-        <div class="earnings-card" style="border-left: 7px solid #556B2F;">
+        <div class="earnings-card" style="border-left: 7px solid #4e73df;">
             <div class="earnings-content">
-                <div class="earnings-title">EARNINGS (MONTHLY)</div>
+                <div class="earnings-title">Ingresos Mensuales</div>
                 <div class="earnings-amount">$@ViewData["INGRESOSMENSUALES"]</div>
             </div>
             <div class="earnings-icon">
@@ -34,17 +41,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Gráfico principal -->
     <div class="row justify-content-center">
         <div class="col-md-12">
-            <div class="card chart-card" style="height: 60vh;">
+            <div class="chart-card" style="height: 60vh;">
                 <div class="card-header">
                     <div class="chart-text">
                         <h5>Ventas vs. Compras</h5>
-                        <p>Historial de ventas y compras de los ultimos meses</p>
+                        <p>Historial de movimientos de los últimos meses</p>
                     </div>
                     <div class="chart-legends">
-                        <span class="legend-item" style="background-color: rgba(75, 192, 192, 0.5); padding: 5px; margin-right: 10px;">Ventas Mensuales</span>
-                        <span class="legend-item" style="background-color: rgba(255, 99, 132, 0.5); padding: 5px;">Compras Mensuales</span>
+                        <span class="legend-item" style="background-color: rgba(75, 192, 192, 0.2); color: rgba(75, 192, 192, 1);">
+                            <i data-lucide="trending-up" style="width: 14px; height: 14px; margin-right: 4px;"></i>
+                            Ventas
+                        </span>
+                        <span class="legend-item" style="background-color: rgba(255, 99, 132, 0.2); color: rgba(255, 99, 132, 1);">
+                            <i data-lucide="trending-down" style="width: 14px; height: 14px; margin-right: 4px;"></i>
+                            Compras
+                        </span>
                     </div>
                 </div>
                 <div class="chart-container" style="height: 80%; width: 98%;">
@@ -54,26 +69,26 @@
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('ventasComprasChart').getContext('2d');
+        lucide.createIcons(); // Asegura que los íconos Lucide se rendericen
 
         // Obtener datos de ViewData
         const meses = @Html.Raw(Json.Serialize(ViewData["MESES"]));
         const montosVentas = @Html.Raw(Json.Serialize(ViewData["MONTOS_VENTAS"]));
         const montosCompras = @Html.Raw(Json.Serialize(ViewData["MONTOS_COMPRAS"]));
 
-        console.log("Meses:", meses);
-        console.log("Ventas:", montosVentas);
-        console.log("Compras:", montosCompras);
-
         // Construir etiquetas de los meses en español
         const labels = meses.map(mes => {
             const date = new Date(2000, mes - 1, 1);
-            return date.toLocaleString('es-ES', { month: 'long' });
+            return date.toLocaleString('es-ES', { month: 'long' }).charAt(0).toUpperCase() +
+                   date.toLocaleString('es-ES', { month: 'long' }).slice(1);
         });
 
+        // Configurar el gráfico con mejores opciones visuales
         const chart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -84,22 +99,52 @@
                         data: montosVentas,
                         backgroundColor: 'rgba(75, 192, 192, 0.5)',
                         borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
+                        borderWidth: 1,
+                        borderRadius: 4
                     },
                     {
                         label: 'Compras Mensuales',
                         data: montosCompras,
                         backgroundColor: 'rgba(255, 99, 132, 0.5)',
                         borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
+                        borderWidth: 1,
+                        borderRadius: 4
                     }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        usePointStyle: true,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += new Intl.NumberFormat('es-ES', {
+                                    style: 'currency',
+                                    currency: 'USD'
+                                }).format(context.raw);
+                                return label;
+                            }
+                        }
+                    }
+                },
                 scales: {
                     x: {
+                        grid: {
+                            display: false
+                        },
                         ticks: {
                             autoSkip: true,
                             maxRotation: 45,
@@ -108,9 +153,12 @@
                     },
                     y: {
                         beginAtZero: true,
+                        grid: {
+                            borderDash: [2, 4]
+                        },
                         ticks: {
                             callback: function(value) {
-                                return value.toLocaleString();
+                                return '$' + value.toLocaleString();
                             }
                         }
                     }
