@@ -1,4 +1,4 @@
-﻿namespace AppGestionStock.Models
+﻿namespace AppGestionStock.DTOs
 {
     public class DetalleVentaDto
     {
