@@ -2,6 +2,7 @@
 using System.Text;
 using AppGestionStock.DTOs;
 using AppGestionStock.Models;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -279,6 +280,11 @@ namespace AppGestionStock.Services
             await this.PostAsync<ActualizarStockModel>(request, model);
         }
 
+        public async Task<int> FindIdProductoNombre(string nombre)
+        {
+            string request = "/api/Productos/idProducto/" + nombre;
+            return await this.GetAsync<int>(request);
+        }
 
         // ========================
         // USUARIOS
@@ -514,5 +520,6 @@ namespace AppGestionStock.Services
         {
             return await this.GetAsync<DetallesVenta>($"api/inventario/detallesventa/{idDetallesVenta}");
         }
+
     }
 }

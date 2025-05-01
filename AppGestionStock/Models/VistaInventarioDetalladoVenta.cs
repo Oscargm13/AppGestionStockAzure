@@ -74,6 +74,8 @@ namespace AppGestionStock.Models
         public int? IdCliente { get; set; }
         [Column("NombreCliente")]
         public string? NombreCliente { get; set; }
+        [Column("NombreTienda")]
+        public string? NombreProveedor { get; set; }
 
         [Column("IdTienda")]
         public int? IdTienda { get; set; }

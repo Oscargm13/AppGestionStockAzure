@@ -44,7 +44,7 @@
                                 <th>Producto</th>
                                 <th>Fecha</th>
                                 <th>Cantidad</th>
-                                <th>Cliente</th>
+                                <th>Cliente/Tienda</th>
                                 <th>Tipo</th>
                             </tr>
                         </thead>
@@ -69,7 +69,16 @@
                                             }
                                             <span class="@claseNumero">@prefijo@movimiento.Cantidad</span>
                                         </td>
-                                        <td>@movimiento.NombreCliente</td>
+                                        <td>
+                                            @if (movimiento.TipoMovimiento.ToLower() == "entrada")
+                                            {
+                                                @(movimiento.NombreTienda ?? "Sin proveedor")
+                                            }
+                                            else
+                                            {
+                                                @(movimiento.NombreCliente ?? "Sin cliente")
+                                            }
+                                        </td>
                                         <td>
                                             @{
                                                 string claseBadge = movimiento.TipoMovimiento.ToLower() == "entrada" ? "badge-entrada" : "badge-salida";

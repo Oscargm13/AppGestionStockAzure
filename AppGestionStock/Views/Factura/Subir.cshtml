@@ -1,0 +1,16 @@
+﻿@{
+    ViewData["Title"] = "Subir Factura";
+}
+
+<h2>Subir Factura PDF</h2>
+
+<form asp-action="Subir" enctype="multipart/form-data" method="post">
+    <input type="file" name="file" accept=".pdf" />
+    <button type="submit">Analizar</button>
+</form>
+
+@if (ViewBag.Mensaje != null)
+{
+    <p style="color:red;">@ViewBag.Mensaje</p>
+}
+
