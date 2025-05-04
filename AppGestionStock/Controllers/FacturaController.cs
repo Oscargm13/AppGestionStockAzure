@@ -2,6 +2,8 @@
 using AppGestionStock.Models;
 using AppGestionStock.Repositories;
 using AppGestionStock.Services;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppGestionStock.Controllers
@@ -11,14 +13,21 @@ namespace AppGestionStock.Controllers
         private readonly FacturaRepository repo;
         private readonly ServiceAlmacenes service;
 
-        public FacturaController(ServiceAlmacenes service, IConfiguration configuration)
+        public FacturaController(ServiceAlmacenes service)
         {
-            // Sustituye por los tuyos reales
+            var keyVaultUrl = "https://keyvaultalmacenes.vault.azure.net/";
+            var credential = new DefaultAzureCredential();
+            var secretClient = new SecretClient(new Uri(keyVaultUrl), credential);
+
+            KeyVaultSecret secret = secretClient.GetSecret("intelligenceskey");
+            string apiKey = secret.Value;
+
             var endpoint = "https://docreaderogm.cognitiveservices.azure.com/";
-            var apiKey = configuration["AzureKeys:ReadKey"];
+
             this.repo = new FacturaRepository(endpoint, apiKey);
             this.service = service;
         }
+
 
         [HttpGet]
         public IActionResult Subir()
@@ -71,7 +80,7 @@ namespace AppGestionStock.Controllers
                 dto.Detalles.Add(new DetalleCompraDto
                 {
                     IdProducto = idProducto,
-                    Cantidad = p.Cantidad, // Ajustar si luego extraes cantidad
+                    Cantidad = p.Cantidad,
                     PrecioUnidad = p.PrecioUnitario
                 });
             }
@@ -79,7 +88,7 @@ namespace AppGestionStock.Controllers
             await service.ProcesarCompraAsync(dto);
 
             TempData["Mensaje"] = "Factura guardada correctamente.";
-            return RedirectToAction("Index", "Home"); // Página principal
+            return RedirectToAction("Index", "Home");
         }
 
     }
